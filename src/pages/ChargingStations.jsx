@@ -8,7 +8,13 @@ const ChargingStations = () => {
   const [stations, setStations] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [showOperatorModal, setShowOperatorModal] = useState(false)
   const [editingStation, setEditingStation] = useState(null)
+  const [editingOperator, setEditingOperator] = useState(null)
+  const [operatorFormData, setOperatorFormData] = useState({
+    username: '',
+    password: ''
+  })
   const [formData, setFormData] = useState({
     name: '',
     stationType: 'AC',
@@ -109,6 +115,36 @@ const ChargingStations = () => {
     setEditingStation(null)
   }
 
+  const handleEditOperator = (station) => {
+    setEditingOperator(station)
+    setOperatorFormData({
+      username: station.assignedOperatorUsername || '',
+      password: station.assignedOperatorPassword || ''
+    })
+    setShowOperatorModal(true)
+  }
+
+  const handleOperatorSubmit = async (e) => {
+    e.preventDefault()
+    try {
+      await apiService.updateOperatorCredentials(editingOperator.id, operatorFormData)
+      Swal.fire('Success', 'Operator credentials updated successfully', 'success')
+      setShowOperatorModal(false)
+      loadStations()
+    } catch (error) {
+      Swal.fire('Error', error.response?.data?.message || 'Failed to update credentials', 'error')
+    }
+  }
+
+  const resetOperatorForm = () => {
+    setOperatorFormData({
+      username: '',
+      password: ''
+    })
+    setEditingOperator(null)
+    setShowOperatorModal(false)
+  }
+
   if (loading) return <LoadingSpinner text="Loading charging stations..." />
 
   return (
@@ -159,6 +195,66 @@ const ChargingStations = () => {
                   <i className="fas fa-clock text-muted me-2"></i>
                   {station.availableSlots?.length || 0} time slots
                 </p>
+                
+                {/* Operator Credentials Section */}
+                {station.assignedOperatorUsername && (
+                  <div className="operator-credentials mb-3">
+                    <h6 className="text-muted mb-2">
+                      <i className="fas fa-user-cog me-2"></i>
+                      Station Operator
+                    </h6>
+                    <div className="row g-2">
+                      <div className="col-12">
+                        <div className="input-group input-group-sm">
+                          <span className="input-group-text">Username</span>
+                          <input 
+                            type="text" 
+                            className="form-control" 
+                            value={station.assignedOperatorUsername} 
+                            readOnly 
+                          />
+                          <button 
+                            className="btn btn-outline-secondary" 
+                            type="button"
+                            onClick={() => navigator.clipboard.writeText(station.assignedOperatorUsername)}
+                            title="Copy username"
+                          >
+                            <i className="fas fa-copy"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <div className="col-12">
+                        <div className="input-group input-group-sm">
+                          <span className="input-group-text">Password</span>
+                          <input 
+                            type="text" 
+                            className="form-control" 
+                            value={station.assignedOperatorPassword || 'Not Available'} 
+                            readOnly 
+                          />
+                          <button 
+                            className="btn btn-outline-secondary" 
+                            type="button"
+                            onClick={() => navigator.clipboard.writeText(station.assignedOperatorPassword || '')}
+                            title="Copy password"
+                          >
+                            <i className="fas fa-copy"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <div className="col-12">
+                        <button 
+                          className="btn btn-sm btn-warning w-100"
+                          onClick={() => handleEditOperator(station)}
+                        >
+                          <i className="fas fa-edit me-1"></i>
+                          Edit Operator Credentials
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="mb-2">
                   <span className={`badge ${station.isActive ? 'bg-success' : 'bg-danger'}`}>
                     {station.isActive ? 'Active' : 'Inactive'}
@@ -327,6 +423,64 @@ const ChargingStations = () => {
             </button>
             <button type="submit" className="btn btn-primary">
               {editingStation ? 'Update' : 'Create'} Station
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Operator Credentials Edit Modal */}
+      <Modal
+        show={showOperatorModal}
+        onClose={resetOperatorForm}
+        title="Edit Operator Credentials"
+        size="md"
+      >
+        <form onSubmit={handleOperatorSubmit}>
+          <div className="mb-3">
+            <label className="form-label">Station Name</label>
+            <input
+              type="text"
+              className="form-control"
+              value={editingOperator?.name || ''}
+              readOnly
+            />
+          </div>
+          
+          <div className="mb-3">
+            <label className="form-label">Username *</label>
+            <input
+              type="text"
+              className="form-control"
+              value={operatorFormData.username}
+              onChange={(e) => setOperatorFormData(prev => ({...prev, username: e.target.value}))}
+              required
+            />
+          </div>
+          
+          <div className="mb-3">
+            <label className="form-label">Password *</label>
+            <input
+              type="text"
+              className="form-control"
+              value={operatorFormData.password}
+              onChange={(e) => setOperatorFormData(prev => ({...prev, password: e.target.value}))}
+              required
+              placeholder="Enter new password"
+            />
+          </div>
+
+          <div className="alert alert-warning">
+            <i className="fas fa-exclamation-triangle me-2"></i>
+            <strong>Important:</strong> Changing credentials will require the operator to use the new username and password to log in.
+          </div>
+
+          <div className="d-flex justify-content-end gap-2">
+            <button type="button" className="btn btn-secondary" onClick={resetOperatorForm}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-warning">
+              <i className="fas fa-save me-2"></i>
+              Update Credentials
             </button>
           </div>
         </form>

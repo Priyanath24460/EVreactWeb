@@ -218,6 +218,11 @@ class ApiService {
     return response.data
   }
 
+  async updateOperatorCredentials(stationId, credentialsData) {
+    const response = await this.api.put(`/chargingstations/${stationId}/operator-credentials`, credentialsData)
+    return response.data
+  }
+
   async getAllOperators() {
     const response = await this.api.get('/chargingstations/operators')
     return response.data
