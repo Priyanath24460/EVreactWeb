@@ -118,13 +118,22 @@ const ChargingStations = () => {
           <i className="fas fa-charging-station me-2 text-primary"></i>
           Charging Stations Management
         </h2>
-        <button 
-          className="btn btn-primary"
-          onClick={() => setShowModal(true)}
-        >
-          <i className="fas fa-plus me-2"></i>
-          Add Station
-        </button>
+        <div className="btn-group">
+          <button 
+            className="btn btn-success"
+            onClick={() => window.location.href = '/create-station-with-operator'}
+          >
+            <i className="fas fa-plus-circle me-2"></i>
+            Create Station + Operator
+          </button>
+          <button 
+            className="btn btn-primary"
+            onClick={() => setShowModal(true)}
+          >
+            <i className="fas fa-plus me-2"></i>
+            Add Station Only
+          </button>
+        </div>
       </div>
 
       <div className="row">

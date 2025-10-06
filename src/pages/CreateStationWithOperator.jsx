@@ -152,60 +152,92 @@ const CreateStationWithOperator = () => {
               )}
 
               {generatedCredentials && (
-                <div className="alert alert-info alert-dismissible fade show">
-                  <h5 className="alert-heading">
+                <div className="alert alert-success alert-dismissible fade show border-0 shadow-sm">
+                  <h5 className="alert-heading text-success">
                     <i className="fas fa-key me-2"></i>
-                    Generated Station Operator Credentials
+                    Station Operator Credentials Generated Successfully!
                   </h5>
-                  <p className="mb-2">
-                    <strong>Station:</strong> {generatedCredentials.stationName}
-                  </p>
-                  <div className="row">
-                    <div className="col-md-6">
-                      <p className="mb-1"><strong>Username:</strong></p>
-                      <div className="input-group mb-2">
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          value={generatedCredentials.username} 
-                          readOnly 
-                        />
-                        <button 
-                          className="btn btn-outline-secondary" 
-                          type="button"
-                          onClick={() => navigator.clipboard.writeText(generatedCredentials.username)}
-                          title="Copy username"
-                        >
-                          <i className="fas fa-copy"></i>
-                        </button>
+                  <div className="bg-white p-3 rounded border border-success-subtle mb-3">
+                    <p className="mb-3">
+                      <strong className="text-dark">Station:</strong> 
+                      <span className="ms-2 badge bg-primary">{generatedCredentials.stationName}</span>
+                    </p>
+                    
+                    <div className="row g-3">
+                      <div className="col-md-6">
+                        <label className="form-label fw-bold text-dark">Username:</label>
+                        <div className="input-group">
+                          <input 
+                            type="text" 
+                            className="form-control bg-light border-success" 
+                            value={generatedCredentials.username} 
+                            readOnly 
+                          />
+                          <button 
+                            className="btn btn-success" 
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(generatedCredentials.username)
+                              // Optional: Add toast notification
+                            }}
+                            title="Copy username to clipboard"
+                          >
+                            <i className="fas fa-copy me-1"></i>
+                            Copy
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div className="col-md-6">
+                        <label className="form-label fw-bold text-dark">Password:</label>
+                        <div className="input-group">
+                          <input 
+                            type="text" 
+                            className="form-control bg-light border-success" 
+                            value={generatedCredentials.password} 
+                            readOnly 
+                          />
+                          <button 
+                            className="btn btn-success" 
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(generatedCredentials.password)
+                              // Optional: Add toast notification
+                            }}
+                            title="Copy password to clipboard"
+                          >
+                            <i className="fas fa-copy me-1"></i>
+                            Copy
+                          </button>
+                        </div>
                       </div>
                     </div>
-                    <div className="col-md-6">
-                      <p className="mb-1"><strong>Password:</strong></p>
-                      <div className="input-group mb-2">
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          value={generatedCredentials.password} 
-                          readOnly 
-                        />
-                        <button 
-                          className="btn btn-outline-secondary" 
-                          type="button"
-                          onClick={() => navigator.clipboard.writeText(generatedCredentials.password)}
-                          title="Copy password"
-                        >
-                          <i className="fas fa-copy"></i>
-                        </button>
-                      </div>
+
+                    <div className="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
+                      <button 
+                        className="btn btn-outline-success btn-sm"
+                        onClick={() => {
+                          const credentials = `Username: ${generatedCredentials.username}\nPassword: ${generatedCredentials.password}`;
+                          navigator.clipboard.writeText(credentials);
+                        }}
+                        title="Copy both credentials"
+                      >
+                        <i className="fas fa-clipboard me-1"></i>
+                        Copy Both Credentials
+                      </button>
                     </div>
                   </div>
-                  <div className="mt-2">
-                    <small className="text-muted">
-                      <i className="fas fa-info-circle me-1"></i>
-                      Please save these credentials securely. The Station Operator will need them to access their dashboard.
-                    </small>
+
+                  <div className="d-flex align-items-start">
+                    <i className="fas fa-info-circle text-success me-2 mt-1"></i>
+                    <div>
+                      <small className="text-dark">
+                        <strong>Important:</strong> Save these credentials securely and share them with the Station Operator. 
+                        They will need these credentials to access their operator dashboard and manage this charging station.
+                      </small>
+                    </div>
                   </div>
+                  
                   <button type="button" className="btn-close" onClick={() => setGeneratedCredentials(null)}></button>
                 </div>
               )}
@@ -331,53 +363,10 @@ const CreateStationWithOperator = () => {
                     Station Operator Assignment
                   </h5>
                   
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Operator Username *</label>
-                      <input
-                        type="text"
-                        className={`form-control ${errors.operatorUsername ? 'is-invalid' : ''}`}
-                        name="operatorUsername"
-                        value={formData.operatorUsername}
-                        onChange={handleInputChange}
-                        placeholder="operator.username"
-                      />
-                      {errors.operatorUsername && <div className="invalid-feedback">{errors.operatorUsername}</div>}
-                    </div>
-
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Operator Email *</label>
-                      <input
-                        type="email"
-                        className={`form-control ${errors.operatorEmail ? 'is-invalid' : ''}`}
-                        name="operatorEmail"
-                        value={formData.operatorEmail}
-                        onChange={handleInputChange}
-                        placeholder="operator@company.com"
-                      />
-                      {errors.operatorEmail && <div className="invalid-feedback">{errors.operatorEmail}</div>}
-                    </div>
-                  </div>
-
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Operator Password *</label>
-                      <input
-                        type="password"
-                        className={`form-control ${errors.operatorPassword ? 'is-invalid' : ''}`}
-                        name="operatorPassword"
-                        value={formData.operatorPassword}
-                        onChange={handleInputChange}
-                        placeholder="Minimum 6 characters"
-                      />
-                      {errors.operatorPassword && <div className="invalid-feedback">{errors.operatorPassword}</div>}
-                    </div>
-                  </div>
-
                   <div className="alert alert-info">
                     <i className="fas fa-info-circle me-2"></i>
-                    <strong>Note:</strong> The operator will receive these credentials to manage this specific charging station. 
-                    They will only have access to this station and cannot create new stations or manage other operators.
+                    <strong>Automatic Operator Creation:</strong> A Station Operator account will be automatically created with secure, 
+                    randomly generated credentials when you submit this form. You'll receive the username and password to share with the operator.
                   </div>
                 </div>
 

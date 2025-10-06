@@ -7,6 +7,7 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import EVOwners from './pages/EVOwners'
 import ChargingStations from './pages/ChargingStations'
+import CreateStationWithOperator from './pages/CreateStationWithOperator'
 import Bookings from './pages/Bookings'
 import Users from './pages/Users'
 import StationOperations from './pages/StationOperations'
@@ -79,6 +80,14 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="Backoffice">
                   <ChargingStations />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/create-station-with-operator" 
+              element={
+                <ProtectedRoute requiredRole="Backoffice">
+                  <CreateStationWithOperator />
                 </ProtectedRoute>
               } 
             />
