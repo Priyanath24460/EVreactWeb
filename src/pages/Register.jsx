@@ -87,11 +87,11 @@ const Register = () => {
     setLoading(true)
 
     try {
-      await apiService.registerStationOperator(formData)
+      await apiService.createBackofficeUser(formData)
       
       await Swal.fire({
         title: 'Registration Successful!',
-        text: 'Your Station Operator account has been created successfully. You can now login.',
+        text: 'Your Backoffice account has been created successfully. You can now login and manage the EV charging system.',
         icon: 'success',
         confirmButtonText: 'Go to Login'
       })
@@ -126,11 +126,16 @@ const Register = () => {
             <div className="card shadow">
               <div className="card-header bg-primary text-white text-center">
                 <h3 className="mb-0">
-                  <i className="fas fa-user-plus me-2"></i>
-                  Station Operator Registration
+                  <i className="fas fa-user-tie me-2"></i>
+                  Backoffice Registration
                 </h3>
               </div>
               <div className="card-body p-4">
+                <div className="alert alert-info mb-4">
+                  <i className="fas fa-info-circle me-2"></i>
+                  <strong>Backoffice Access:</strong> Create stations, manage operators, and oversee the entire EV charging system.
+                </div>
+                
                 <form onSubmit={handleSubmit}>
                   <div className="row">
                     <div className="col-md-6 mb-3">
@@ -273,7 +278,7 @@ const Register = () => {
                     ) : (
                       <>
                         <i className="fas fa-user-plus me-2"></i>
-                        Register as Station Operator
+                        Register as Backoffice User
                       </>
                     )}
                   </button>
@@ -293,8 +298,18 @@ const Register = () => {
             <div className="text-center mt-3">
               <small className="text-muted">
                 <i className="fas fa-info-circle me-1"></i>
-                Station Operators can manage charging stations and verify bookings
+                Backoffice users can create charging stations, manage operators, and oversee the entire system
               </small>
+            </div>
+            
+            <div className="text-center mt-2">
+              <div className="alert alert-light border">
+                <small className="text-muted">
+                  <i className="fas fa-user-cog me-1 text-success"></i>
+                  <strong>Need a Station Operator account?</strong><br/>
+                  Station Operator accounts are created by Backoffice users when setting up new charging stations.
+                </small>
+              </div>
             </div>
           </div>
         </div>

@@ -54,10 +54,7 @@ class ApiService {
     return response.data
   }
 
-  async registerStationOperator(userData) {
-    const response = await this.api.post('/auth/register-operator', userData)
-    return response.data
-  }
+
 
   // EV Owners API
   async getEVOwners() {

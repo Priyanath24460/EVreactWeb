@@ -107,17 +107,21 @@ const Login = () => {
               <div className="mt-4 p-3 bg-light rounded">
                 <small className="text-muted">
                   <strong>Demo Accounts:</strong><br/>
-                  Backoffice: admin / admin123<br/>
-                  Station Operator: operator / operator123
+                  <span className="text-primary">Backoffice:</span> admin / admin123 <i className="fas fa-user-tie ms-1"></i><br/>
+                  <span className="text-success">Station Operator:</span> (Created by Backoffice) <i className="fas fa-user-cog ms-1"></i>
                 </small>
               </div>
 
               <div className="text-center mt-3">
                 <p className="mb-0">
-                  Need a Station Operator account?{' '}
+                  Need a Backoffice account?{' '}
                   <Link to="/register" className="text-decoration-none">
                     Register here
                   </Link>
+                </p>
+                <p className="mt-2 text-muted small">
+                  <i className="fas fa-info-circle me-1"></i>
+                  Station Operators receive login credentials from Backoffice
                 </p>
               </div>
             </div>
