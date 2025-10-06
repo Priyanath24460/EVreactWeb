@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 const Navbar = () => {
-  const { user, logout, isAuthenticated, isBackoffice } = useAuth()
+  const { user, logout, isAuthenticated, isBackoffice, isStationOperator } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -81,15 +81,15 @@ const Navbar = () => {
             )}
             
             {/* Station Operator Only - Operations */}
-            {user?.role === 'StationOperator' && (
+            {isStationOperator && (
               <>
                 <li className="nav-item">
                   <Link 
-                    className={`nav-link ${isActive('/station-operations') ? 'active' : ''}`} 
-                    to="/station-operations"
+                    className={`nav-link ${isActive('/charging-stations') ? 'active' : ''}`} 
+                    to="/charging-stations"
                   >
-                    <i className="fas fa-tools me-1"></i>
-                    Station Operations
+                    <i className="fas fa-charging-station me-1"></i>
+                    My Stations
                   </Link>
                 </li>
               </>

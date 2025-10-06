@@ -18,9 +18,18 @@ class ApiService {
     this.api.interceptors.request.use(
       (config) => {
         const token = localStorage.getItem('authToken')
+        const userData = localStorage.getItem('userData')
+        
         if (token) {
           config.headers.Authorization = `Bearer ${token}`
         }
+        
+        if (userData) {
+          const user = JSON.parse(userData)
+          config.headers['User-Role'] = user.role
+          config.headers['User-Id'] = user.id
+        }
+        
         return config
       },
       (error) => Promise.reject(error)
@@ -201,6 +210,45 @@ class ApiService {
 
   async changePassword(userId, passwordData) {
     const response = await this.api.post(`/users/${userId}/change-password`, passwordData)
+    return response.data
+  }
+
+  // ============ ROLE-BASED API METHODS ============
+  
+  // Backoffice methods
+  async createStationWithOperator(stationData) {
+    const response = await this.api.post('/chargingstations/with-operator', stationData)
+    return response.data
+  }
+
+  async getAllOperators() {
+    const response = await this.api.get('/chargingstations/operators')
+    return response.data
+  }
+
+  async assignOperatorToStation(stationId, operatorId) {
+    const response = await this.api.post(`/chargingstations/${stationId}/assign-operator/${operatorId}`)
+    return response.data
+  }
+
+  async deactivateOperator(operatorId) {
+    const response = await this.api.patch(`/chargingstations/operators/${operatorId}/deactivate`)
+    return response.data
+  }
+
+  async createBackofficeUser(userData) {
+    const response = await this.api.post('/auth/create-backoffice', userData)
+    return response.data
+  }
+
+  // Station Operator methods
+  async getMyStations() {
+    const response = await this.api.get('/chargingstations/my-stations')
+    return response.data
+  }
+
+  async updateMyStation(stationId, updateData) {
+    const response = await this.api.put(`/chargingstations/${stationId}/operator-update`, updateData)
     return response.data
   }
 }
