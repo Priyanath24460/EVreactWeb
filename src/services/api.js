@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = 'https://webserverapi-vc37.onrender.com/api'
+const API_BASE_URL = 'https://evwebserverapi.onrender.com/api'
 
 class ApiService {
   constructor() {
