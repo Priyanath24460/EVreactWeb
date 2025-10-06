@@ -1,0 +1,297 @@
+import React, { useState, useEffect } from 'react'
+import { useAuth } from '../context/AuthContext'
+import apiService from '../services/api'
+import Swal from 'sweetalert2'
+import LoadingSpinner from '../components/LoadingSpinner'
+import Modal from '../components/Modal'
+
+const Bookings = () => {
+  const { isBackoffice, isStationOperator, user } = useAuth()
+  const [bookings, setBookings] = useState([])
+  const [evOwners, setEvOwners] = useState([])
+  const [stations, setStations] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editingBooking, setEditingBooking] = useState(null)
+  const [formData, setFormData] = useState({
+    evOwnerNIC: '',
+    chargingStationId: '',
+    slotId: '',
+    reservationDateTime: '',
+    durationMinutes: 60,
+    status: 'Pending'
+  })
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    try {
+      const [bookingsData, ownersData, stationsData] = await Promise.all([
+        apiService.getBookings(),
+        apiService.getEVOwners(),
+        apiService.getActiveStations()
+      ])
+      
+      setBookings(bookingsData)
+      setEvOwners(ownersData.filter(owner => owner.isActive))
+      setStations(stationsData)
+    } catch (error) {
+      Swal.fire('Error', 'Failed to load data', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    try {
+      if (editingBooking) {
+        await apiService.updateBooking(editingBooking.id, formData)
+        Swal.fire('Success', 'Booking updated successfully', 'success')
+      } else {
+        await apiService.createBooking(formData)
+        Swal.fire('Success', 'Booking created successfully', 'success')
+      }
+      setShowModal(false)
+      resetForm()
+      loadData()
+    } catch (error) {
+      Swal.fire('Error', error.response?.data || 'Operation failed', 'error')
+    }
+  }
+
+  const handleCancel = async (id) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You want to cancel this booking?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, cancel it!'
+    })
+
+    if (result.isConfirmed) {
+      try {
+        await apiService.cancelBooking(id)
+        Swal.fire('Cancelled!', 'Booking has been cancelled.', 'success')
+        loadData()
+      } catch (error) {
+        Swal.fire('Error', error.response?.data || 'Cancellation failed', 'error')
+      }
+    }
+  }
+
+  const getStatusBadge = (status) => {
+    const statusConfig = {
+      Pending: 'bg-warning',
+      Approved: 'bg-success',
+      Completed: 'bg-info',
+      Cancelled: 'bg-danger'
+    }
+    return statusConfig[status] || 'bg-secondary'
+  }
+
+  const resetForm = () => {
+    setFormData({
+      evOwnerNIC: '',
+      chargingStationId: '',
+      slotId: '',
+      reservationDateTime: '',
+      durationMinutes: 60,
+      status: 'Pending'
+    })
+    setEditingBooking(null)
+  }
+
+  if (loading) return <LoadingSpinner text="Loading bookings..." />
+
+  return (
+    <div>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+          <i className="fas fa-calendar-alt me-2 text-primary"></i>
+          {isBackoffice ? 'Bookings Management' : 'Booking Operations'}
+        </h2>
+        {isBackoffice && (
+          <button 
+            className="btn btn-primary"
+            onClick={() => setShowModal(true)}
+          >
+            <i className="fas fa-plus me-2"></i>
+            New Booking
+          </button>
+        )}
+      </div>
+
+      <div className="card">
+        <div className="card-body">
+          <div className="table-responsive">
+            <table className="table table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>Reference</th>
+                  <th>EV Owner</th>
+                  <th>Station</th>
+                  <th>Reservation Date</th>
+                  <th>Duration</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bookings.map(booking => (
+                  <tr key={booking.id}>
+                    <td>
+                      <small className="text-muted">{booking.bookingReference}</small>
+                    </td>
+                    <td>{booking.evOwnerNIC}</td>
+                    <td>
+                      {stations.find(s => s.id === booking.chargingStationId)?.name || 'N/A'}
+                    </td>
+                    <td>
+                      {new Date(booking.reservationDateTime).toLocaleString()}
+                    </td>
+                    <td>{booking.durationMinutes} min</td>
+                    <td>
+                      <span className={`badge ${getStatusBadge(booking.status)}`}>
+                        {booking.status}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="btn-group btn-group-sm">
+                        {booking.status === 'Pending' && (
+                          <>
+                            <button className="btn btn-outline-success">
+                              <i className="fas fa-check"></i>
+                            </button>
+                            <button 
+                              className="btn btn-outline-danger"
+                              onClick={() => handleCancel(booking.id)}
+                            >
+                              <i className="fas fa-times"></i>
+                            </button>
+                          </>
+                        )}
+                        {booking.status === 'Approved' && (
+                          <button className="btn btn-outline-info">
+                            <i className="fas fa-qrcode"></i>
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <Modal
+        show={showModal}
+        onClose={() => {
+          setShowModal(false)
+          resetForm()
+        }}
+        title={editingBooking ? 'Edit Booking' : 'Create New Booking'}
+        size="lg"
+      >
+        <form onSubmit={handleSubmit}>
+          <div className="row">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label">EV Owner *</label>
+                <select
+                  className="form-select"
+                  value={formData.evOwnerNIC}
+                  onChange={(e) => setFormData({ ...formData, evOwnerNIC: e.target.value })}
+                  required
+                >
+                  <option value="">Select EV Owner</option>
+                  {evOwners.map(owner => (
+                    <option key={owner.nic} value={owner.nic}>
+                      {owner.firstName} {owner.lastName} ({owner.nic})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label">Charging Station *</label>
+                <select
+                  className="form-select"
+                  value={formData.chargingStationId}
+                  onChange={(e) => setFormData({ ...formData, chargingStationId: e.target.value })}
+                  required
+                >
+                  <option value="">Select Station</option>
+                  {stations.map(station => (
+                    <option key={station.id} value={station.id}>
+                      {station.name} ({station.stationType})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label">Reservation Date & Time *</label>
+                <input
+                  type="datetime-local"
+                  className="form-control"
+                  value={formData.reservationDateTime}
+                  onChange={(e) => setFormData({ ...formData, reservationDateTime: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label">Duration (minutes) *</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={formData.durationMinutes}
+                  onChange={(e) => setFormData({ ...formData, durationMinutes: parseInt(e.target.value) })}
+                  min="30"
+                  max="240"
+                  step="30"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Slot ID</label>
+            <input
+              type="text"
+              className="form-control"
+              value={formData.slotId}
+              onChange={(e) => setFormData({ ...formData, slotId: e.target.value })}
+              placeholder="Optional - will be auto-generated if empty"
+            />
+          </div>
+
+          <div className="d-flex justify-content-end gap-2">
+            <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary">
+              {editingBooking ? 'Update' : 'Create'} Booking
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </div>
+  )
+}
+
+export default Bookings
