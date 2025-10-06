@@ -14,13 +14,10 @@ const CreateStationWithOperator = () => {
     address: '',
     city: '',
     latitude: '',
-    longitude: '',
-    
-    // Operator details
-    operatorUsername: '',
-    operatorPassword: '',
-    operatorEmail: ''
+    longitude: ''
   })
+
+  const [generatedCredentials, setGeneratedCredentials] = useState(null)
 
   const [errors, setErrors] = useState({})
   const [successMessage, setSuccessMessage] = useState('')
@@ -67,22 +64,7 @@ const CreateStationWithOperator = () => {
       newErrors.longitude = 'Invalid longitude format'
     }
 
-    // Operator validation
-    if (!formData.operatorUsername.trim()) {
-      newErrors.operatorUsername = 'Operator username is required'
-    }
-    if (!formData.operatorPassword.trim()) {
-      newErrors.operatorPassword = 'Operator password is required'
-    }
-    if (formData.operatorPassword.length < 6) {
-      newErrors.operatorPassword = 'Password must be at least 6 characters'
-    }
-    if (!formData.operatorEmail.trim()) {
-      newErrors.operatorEmail = 'Operator email is required'
-    }
-    if (!/\S+@\S+\.\S+/.test(formData.operatorEmail)) {
-      newErrors.operatorEmail = 'Invalid email format'
-    }
+    // No operator validation needed - credentials are auto-generated
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -108,15 +90,19 @@ const CreateStationWithOperator = () => {
           longitude: parseFloat(formData.longitude) || 0
         },
         stationType: formData.stationType,
-        totalSlots: parseInt(formData.totalSlots),
-        operatorUsername: formData.operatorUsername,
-        operatorPassword: formData.operatorPassword,
-        operatorEmail: formData.operatorEmail
+        totalSlots: parseInt(formData.totalSlots)
       }
 
       const response = await apiService.createStationWithOperator(stationData)
       
-      setSuccessMessage(`Station "${formData.name}" created successfully with operator "${formData.operatorUsername}"!`)
+      // Store generated credentials to display
+      setGeneratedCredentials({
+        username: response.generatedUsername,
+        password: response.generatedPassword,
+        stationName: formData.name
+      })
+      
+      setSuccessMessage(`Station "${formData.name}" created successfully with auto-generated operator credentials!`)
       
       // Reset form
       setFormData({
@@ -126,15 +112,16 @@ const CreateStationWithOperator = () => {
         address: '',
         city: '',
         latitude: '',
-        longitude: '',
-        operatorUsername: '',
-        operatorPassword: '',
-        operatorEmail: ''
+        longitude: ''
       })
+      
+      // Clear any previous errors
+      setErrors({})
       
     } catch (error) {
       console.error('Error creating station:', error)
       setErrors({ submit: error.response?.data?.message || 'Failed to create station. Please try again.' })
+      setGeneratedCredentials(null) // Clear credentials on error
     } finally {
       setLoading(false)
     }
@@ -161,6 +148,65 @@ const CreateStationWithOperator = () => {
                   <i className="fas fa-check-circle me-2"></i>
                   {successMessage}
                   <button type="button" className="btn-close" onClick={() => setSuccessMessage('')}></button>
+                </div>
+              )}
+
+              {generatedCredentials && (
+                <div className="alert alert-info alert-dismissible fade show">
+                  <h5 className="alert-heading">
+                    <i className="fas fa-key me-2"></i>
+                    Generated Station Operator Credentials
+                  </h5>
+                  <p className="mb-2">
+                    <strong>Station:</strong> {generatedCredentials.stationName}
+                  </p>
+                  <div className="row">
+                    <div className="col-md-6">
+                      <p className="mb-1"><strong>Username:</strong></p>
+                      <div className="input-group mb-2">
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          value={generatedCredentials.username} 
+                          readOnly 
+                        />
+                        <button 
+                          className="btn btn-outline-secondary" 
+                          type="button"
+                          onClick={() => navigator.clipboard.writeText(generatedCredentials.username)}
+                          title="Copy username"
+                        >
+                          <i className="fas fa-copy"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <p className="mb-1"><strong>Password:</strong></p>
+                      <div className="input-group mb-2">
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          value={generatedCredentials.password} 
+                          readOnly 
+                        />
+                        <button 
+                          className="btn btn-outline-secondary" 
+                          type="button"
+                          onClick={() => navigator.clipboard.writeText(generatedCredentials.password)}
+                          title="Copy password"
+                        >
+                          <i className="fas fa-copy"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-2">
+                    <small className="text-muted">
+                      <i className="fas fa-info-circle me-1"></i>
+                      Please save these credentials securely. The Station Operator will need them to access their dashboard.
+                    </small>
+                  </div>
+                  <button type="button" className="btn-close" onClick={() => setGeneratedCredentials(null)}></button>
                 </div>
               )}
 
