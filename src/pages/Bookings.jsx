@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../context/AuthContext'
 import apiService from '../services/api'
 import Swal from 'sweetalert2'
@@ -6,7 +6,7 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import Modal from '../components/Modal'
 
 const Bookings = () => {
-  const { isBackoffice } = useAuth()
+  const { isBackoffice, isStationOperator } = useAuth()
   const [bookings, setBookings] = useState([])
   const [evOwners, setEvOwners] = useState([])
   const [stations, setStations] = useState([])
@@ -22,27 +22,39 @@ const Bookings = () => {
     status: 'Pending'
   })
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
+      // Station operators should only see bookings for their assigned stations
+      const stationsPromise = isStationOperator ? apiService.getMyStations() : apiService.getActiveStations()
+
       const [bookingsData, ownersData, stationsData] = await Promise.all([
         apiService.getBookings(),
         apiService.getEVOwners(),
-        apiService.getActiveStations()
+        stationsPromise
       ])
-      
-      setBookings(bookingsData)
+
+      // If operator, filter bookings to only those belonging to assigned stations
+      if (isStationOperator) {
+        const stationIds = stationsData.map(s => s.id)
+        const filteredBookings = bookingsData.filter(b => stationIds.includes(b.chargingStationId))
+        setBookings(filteredBookings)
+      } else {
+        setBookings(bookingsData)
+      }
+
       setEvOwners(ownersData.filter(owner => owner.isActive))
       setStations(stationsData)
-    } catch {
+    } catch (err) {
+      console.error('Failed to load bookings data', err)
       Swal.fire('Error', 'Failed to load data', 'error')
     } finally {
       setLoading(false)
     }
-  }
+  }, [isStationOperator])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
