@@ -17,7 +17,9 @@ const EVOwners = () => {
     phoneNumber: '',
     vehicleModel: '',
     vehiclePlateNumber: '',
-    isActive: true
+    // EV Owner accounts must be activated by Backoffice staff.
+    // Default to inactive when created via the web UI.
+    isActive: false
   })
 
   useEffect(() => {
@@ -28,7 +30,7 @@ const EVOwners = () => {
     try {
       const data = await apiService.getEVOwners()
       setEvOwners(data)
-    } catch (error) {
+    } catch {
       Swal.fire('Error', 'Failed to load EV owners', 'error')
     } finally {
       setLoading(false)
@@ -42,7 +44,9 @@ const EVOwners = () => {
         await apiService.updateEVOwner(editingOwner.nic, formData)
         Swal.fire('Success', 'EV owner updated successfully', 'success')
       } else {
-        await apiService.createEVOwner(formData)
+        // Ensure newly created EV owners are inactive by default.
+        const payload = { ...formData, isActive: false }
+        await apiService.createEVOwner(payload)
         Swal.fire('Success', 'EV owner created successfully', 'success')
       }
       setShowModal(false)
@@ -75,7 +79,7 @@ const EVOwners = () => {
         await apiService.deleteEVOwner(nic)
         Swal.fire('Deleted!', 'EV owner has been deleted.', 'success')
         loadEVOwners()
-      } catch (error) {
+      } catch {
         Swal.fire('Error', 'Failed to delete EV owner', 'error')
       }
     }
@@ -86,7 +90,7 @@ const EVOwners = () => {
       await apiService.updateEVOwnerStatus(nic, isActive)
       Swal.fire('Success', `EV owner ${isActive ? 'activated' : 'deactivated'}`, 'success')
       loadEVOwners()
-    } catch (error) {
+    } catch {
       Swal.fire('Error', 'Failed to update status', 'error')
     }
   }
@@ -285,15 +289,24 @@ const EVOwners = () => {
             />
           </div>
 
-          <div className="mb-3 form-check">
-            <input
-              type="checkbox"
-              className="form-check-input"
-              checked={formData.isActive}
-              onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-            />
-            <label className="form-check-label">Active Account</label>
-          </div>
+          {/* Activation: only allow toggling when editing an existing owner.
+              New accounts are inactive by default and must be activated by Backoffice. */}
+          {editingOwner ? (
+            <div className="mb-3 form-check">
+              <input
+                type="checkbox"
+                className="form-check-input"
+                checked={formData.isActive}
+                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+              />
+              <label className="form-check-label">Active Account</label>
+            </div>
+          ) : (
+            <div className="alert alert-info small">
+              <i className="fas fa-info-circle me-2"></i>
+              New EV owner accounts are created as <strong>Inactive</strong>. Backoffice staff must activate the account before the EV owner can use the mobile app to login.
+            </div>
+          )}
 
           <div className="d-flex justify-content-end gap-2">
             <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>

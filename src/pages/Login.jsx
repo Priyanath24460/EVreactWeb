@@ -112,6 +112,13 @@ const Login = () => {
                 </small>
               </div>
 
+              <div className="mt-3">
+                <small className="text-muted">
+                  <i className="fas fa-info-circle me-1"></i>
+                  EV Owners: please register using the mobile application. Accounts must be activated by Backoffice staff before mobile login is allowed.
+                </small>
+              </div>
+
               <div className="text-center mt-3">
                 <p className="mb-0">
                   Need a Backoffice account?{' '}

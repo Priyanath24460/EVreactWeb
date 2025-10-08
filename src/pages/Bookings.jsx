@@ -6,7 +6,7 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import Modal from '../components/Modal'
 
 const Bookings = () => {
-  const { isBackoffice, isStationOperator, user } = useAuth()
+  const { isBackoffice } = useAuth()
   const [bookings, setBookings] = useState([])
   const [evOwners, setEvOwners] = useState([])
   const [stations, setStations] = useState([])
@@ -37,7 +37,7 @@ const Bookings = () => {
       setBookings(bookingsData)
       setEvOwners(ownersData.filter(owner => owner.isActive))
       setStations(stationsData)
-    } catch (error) {
+    } catch {
       Swal.fire('Error', 'Failed to load data', 'error')
     } finally {
       setLoading(false)
@@ -46,8 +46,48 @@ const Bookings = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    // Validate reservation date rules
+    try {
+      const reservationDt = new Date(formData.reservationDateTime)
+      const now = new Date()
+      const maxAllowed = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) // 7 days
+
+      if (!formData.reservationDateTime || isNaN(reservationDt.getTime())) {
+        Swal.fire('Validation Error', 'Reservation date/time is required and must be valid', 'error')
+        return
+      }
+
+      if (reservationDt < now) {
+        Swal.fire('Validation Error', 'Reservation must be in the future', 'error')
+        return
+      }
+
+      if (reservationDt > maxAllowed) {
+        Swal.fire('Validation Error', 'Reservation must be within 7 days from now', 'error')
+        return
+      }
+    } catch {
+      Swal.fire('Validation Error', 'Invalid reservation date/time', 'error')
+      return
+    }
     try {
       if (editingBooking) {
+        // Prevent updates within 12 hours of reservation
+        const reservationDt = new Date(editingBooking.reservationDateTime)
+        const twelveHoursBefore = new Date(reservationDt.getTime() - 12 * 60 * 60 * 1000)
+        const now = new Date()
+
+        if (now > twelveHoursBefore) {
+          Swal.fire('Too Late', 'Bookings can only be updated at least 12 hours before the reservation', 'warning')
+          return
+        }
+
+        // Optionally consult server if available
+        const canModify = await apiService.canModifyBooking(editingBooking.id).catch(() => ({ canModify: false }))
+        if (canModify && canModify.canModify === false) {
+          Swal.fire('Cannot Modify', canModify.message || 'Booking cannot be modified', 'warning')
+          return
+        }
         await apiService.updateBooking(editingBooking.id, formData)
         Swal.fire('Success', 'Booking updated successfully', 'success')
       } else {
@@ -75,6 +115,25 @@ const Bookings = () => {
 
     if (result.isConfirmed) {
       try {
+        // Check reservation time to enforce 12 hour rule
+        const booking = bookings.find(b => b.id === id)
+        if (booking) {
+          const reservationDt = new Date(booking.reservationDateTime)
+          const twelveHoursBefore = new Date(reservationDt.getTime() - 12 * 60 * 60 * 1000)
+          const now = new Date()
+          if (now > twelveHoursBefore) {
+            Swal.fire('Too Late', 'Bookings can only be cancelled at least 12 hours before the reservation', 'warning')
+            return
+          }
+        }
+
+        // Optionally ask server whether cancellation is allowed
+        const canModify = await apiService.canModifyBooking(id).catch(() => ({ canModify: true }))
+        if (canModify && canModify.canModify === false) {
+          Swal.fire('Cannot Cancel', canModify.message || 'Booking cannot be cancelled', 'warning')
+          return
+        }
+
         await apiService.cancelBooking(id)
         Swal.fire('Cancelled!', 'Booking has been cancelled.', 'success')
         loadData()

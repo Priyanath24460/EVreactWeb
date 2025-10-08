@@ -36,7 +36,7 @@ const ChargingStations = () => {
     try {
       const data = await apiService.getChargingStations()
       setStations(data)
-    } catch (error) {
+    } catch {
       Swal.fire('Error', 'Failed to load charging stations', 'error')
     } finally {
       setLoading(false)
@@ -188,12 +188,19 @@ const ChargingStations = () => {
                   {station.location.address}, {station.location.city}
                 </p>
                 <p className="card-text">
-                  <i className="fas fa-slots text-muted me-2"></i>
-                  {station.totalSlots} slots available
+                  <i className="fas fa-plug text-muted me-2"></i>
+                  <strong>{station.totalSlots}</strong> total physical sockets
                 </p>
                 <p className="card-text">
                   <i className="fas fa-clock text-muted me-2"></i>
-                  {station.availableSlots?.length || 0} time slots
+                  <strong>{station.availableSlots?.length || 0}</strong> scheduled time slots
+                  {station.availableSlots && (
+                    <div>
+                      <small className="text-muted">
+                        {station.availableSlots.filter(s => s.isAvailable).length} available
+                      </small>
+                    </div>
+                  )}
                 </p>
                 
                 {/* Operator Credentials Section */}
