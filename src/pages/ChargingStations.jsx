@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
+import { useAuth } from '../context/AuthContext'
 import apiService from '../services/api'
 import Swal from 'sweetalert2'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -28,20 +29,28 @@ const ChargingStations = () => {
     isActive: true
   })
 
-  useEffect(() => {
-    loadStations()
-  }, [])
+  const { isBackoffice, isStationOperator } = useAuth()
 
-  const loadStations = async () => {
+  const loadStations = useCallback(async () => {
     try {
-      const data = await apiService.getChargingStations()
+      let data = []
+      if (isStationOperator) {
+        data = await apiService.getMyStations()
+      } else {
+        data = await apiService.getChargingStations()
+      }
       setStations(data)
-    } catch {
+    } catch (err) {
+      console.error('Failed to load stations', err)
       Swal.fire('Error', 'Failed to load charging stations', 'error')
     } finally {
       setLoading(false)
     }
-  }
+  }, [isStationOperator])
+
+  useEffect(() => {
+    loadStations()
+  }, [loadStations])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -154,22 +163,25 @@ const ChargingStations = () => {
           <i className="fas fa-charging-station me-2 text-primary"></i>
           Charging Stations Management
         </h2>
-        <div className="btn-group">
-          <button 
-            className="btn btn-success"
-            onClick={() => window.location.href = '/create-station-with-operator'}
-          >
-            <i className="fas fa-plus-circle me-2"></i>
-            Create Station + Operator
-          </button>
-          <button 
-            className="btn btn-primary"
-            onClick={() => setShowModal(true)}
-          >
-            <i className="fas fa-plus me-2"></i>
-            Add Station Only
-          </button>
-        </div>
+        {/* Backoffice controls only */}
+        {isBackoffice && (
+          <div className="btn-group">
+            <button 
+              className="btn btn-success"
+              onClick={() => window.location.href = '/create-station-with-operator'}
+            >
+              <i className="fas fa-plus-circle me-2"></i>
+              Create Station + Operator
+            </button>
+            <button 
+              className="btn btn-primary"
+              onClick={() => setShowModal(true)}
+            >
+              <i className="fas fa-plus me-2"></i>
+              Add Station Only
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="row">
