@@ -20,6 +20,7 @@ const ChargingStations = () => {
     name: '',
     stationType: 'AC',
     totalSlots: 4,
+    slotsPerDay: 10,
     location: {
       address: '',
       city: '',
@@ -28,6 +29,11 @@ const ChargingStations = () => {
     },
     isActive: true
   })
+
+  const [locating, setLocating] = useState(false)
+  const [locationError, setLocationError] = useState('')
+  const [geocoding, setGeocoding] = useState(false)
+  const [geocodeError, setGeocodeError] = useState('')
 
   const { isBackoffice, isStationOperator } = useAuth()
 
@@ -76,6 +82,61 @@ const ChargingStations = () => {
     setShowModal(true)
   }
 
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation not supported by this browser.')
+      return
+    }
+
+    setLocationError('')
+    setLocating(true)
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        setFormData(prev => ({
+          ...prev,
+          location: { ...prev.location, latitude, longitude }
+        }))
+        setLocating(false)
+      },
+      (err) => {
+        setLocationError(err.message || 'Unable to retrieve location.')
+        setLocating(false)
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    )
+  }
+
+  const handleGeocodeAddress = async () => {
+    const city = `${formData.location.city}`.trim()
+    if (!city) {
+      setGeocodeError('Please enter a city to lookup')
+      return
+    }
+
+    setGeocodeError('')
+    setGeocoding(true)
+    try {
+      const q = encodeURIComponent(city)
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1`
+      const res = await fetch(url)
+      if (!res.ok) throw new Error('Geocoding request failed')
+      const data = await res.json()
+      if (!data || data.length === 0) {
+        setGeocodeError('No coordinates found for the given city')
+        return
+      }
+      const place = data[0]
+      setFormData(prev => ({ ...prev, location: { ...prev.location, latitude: parseFloat(place.lat), longitude: parseFloat(place.lon) } }))
+    } catch (err) {
+      console.error('Geocoding error', err)
+      setGeocodeError(err.message || 'Failed to lookup coordinates')
+    } finally {
+      setGeocoding(false)
+    }
+  }
+
   const handleDeactivate = async (id) => {
     try {
       await apiService.deactivateStation(id)
@@ -113,6 +174,7 @@ const ChargingStations = () => {
       name: '',
       stationType: 'AC',
       totalSlots: 4,
+      slotsPerDay: 10,
       location: {
         address: '',
         city: '',
@@ -351,7 +413,7 @@ const ChargingStations = () => {
           <div className="row">
             <div className="col-md-6">
               <div className="mb-3">
-                <label className="form-label">Total Slots *</label>
+                <label className="form-label">Sockets (physical chargers) *</label>
                 <input
                   type="number"
                   className="form-control"
@@ -361,6 +423,21 @@ const ChargingStations = () => {
                   max="20"
                   required
                 />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label">Slots Per Day *</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={formData.slotsPerDay}
+                  onChange={(e) => setFormData({ ...formData, slotsPerDay: parseInt(e.target.value) })}
+                  min="1"
+                  max="48"
+                  required
+                />
+                <div className="form-text">Number of time slots generated per day (default 10)</div>
               </div>
             </div>
             <div className="col-md-6">
@@ -377,6 +454,28 @@ const ChargingStations = () => {
                   required
                 />
               </div>
+            </div>
+            <div className="col-12 mb-3">
+              <button
+                type="button"
+                className="btn btn-outline-secondary me-2"
+                onClick={handleGeocodeAddress}
+                disabled={geocoding}
+              >
+                {geocoding ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="fas fa-search-location me-2"></i>}
+                Lookup coordinates from city
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline-primary"
+                onClick={handleUseCurrentLocation}
+                disabled={locating}
+              >
+                {locating ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="fas fa-map-marker-alt me-2"></i>}
+                Use current location
+              </button>
+              {geocodeError && <div className="text-danger small mt-2">{geocodeError}</div>}
+              {locationError && <div className="text-danger small mt-2">{locationError}</div>}
             </div>
           </div>
 

@@ -155,6 +155,31 @@ const Bookings = () => {
     }
   }
 
+  const handleConfirm = async (id) => {
+    const booking = bookings.find(b => b.id === id)
+    if (!booking) return
+
+    const result = await Swal.fire({
+      title: 'Confirm booking?',
+      text: 'Mark this booking as Approved?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, confirm',
+    })
+
+    if (!result.isConfirmed) return
+
+    try {
+      // update status to Approved; backend may support a specific endpoint instead
+      await apiService.updateBooking(id, { ...booking, status: 'Approved' })
+      Swal.fire('Confirmed', 'Booking marked as Approved', 'success')
+      loadData()
+    } catch (err) {
+      console.error(err)
+      Swal.fire('Error', err.response?.data || 'Could not confirm booking', 'error')
+    }
+  }
+
   const getStatusBadge = (status) => {
     const statusConfig = {
       Pending: 'bg-warning',
@@ -235,7 +260,10 @@ const Bookings = () => {
                       <div className="btn-group btn-group-sm">
                         {booking.status === 'Pending' && (
                           <>
-                            <button className="btn btn-outline-success">
+                            <button
+                              className="btn btn-outline-success"
+                              onClick={() => handleConfirm(booking.id)}
+                            >
                               <i className="fas fa-check"></i>
                             </button>
                             <button 

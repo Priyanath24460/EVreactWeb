@@ -7,7 +7,7 @@ const OperatorDashboard = () => {
   const { user } = useAuth()
   const [stats, setStats] = useState({})
   const [myStations, setMyStations] = useState([])
-  const [myBookings, setMyBookings] = useState([])
+  const [, setMyBookings] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -122,7 +122,7 @@ const OperatorDashboard = () => {
               <div className="d-flex justify-content-between">
                 <div>
                   <h4 className="card-title">{stats.totalSlots || 0}</h4>
-                  <p className="card-text">Total Slots</p>
+                  <p className="card-text">Total Sockets</p>
                   <small className="opacity-75">Available: {stats.availableSlots || 0}</small>
                 </div>
                 <i className="fas fa-plug fa-2x opacity-50"></i>
