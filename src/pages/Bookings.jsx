@@ -234,7 +234,7 @@ const Bookings = () => {
                   <th>Reservation Date</th>
                   <th>Duration</th>
                   <th>Status</th>
-                  <th>Actions</th>
+                  {!isBackoffice && <th>Actions</th>}
                 </tr>
               </thead>
               <tbody>
@@ -256,31 +256,33 @@ const Bookings = () => {
                         {booking.status}
                       </span>
                     </td>
-                    <td>
-                      <div className="btn-group btn-group-sm">
-                        {booking.status === 'Pending' && (
-                          <>
-                            <button
-                              className="btn btn-outline-success"
-                              onClick={() => handleConfirm(booking.id)}
-                            >
-                              <i className="fas fa-check"></i>
+                    {!isBackoffice && (
+                      <td>
+                        <div className="btn-group btn-group-sm">
+                          {booking.status === 'Pending' && (
+                            <>
+                              <button
+                                className="btn btn-outline-success"
+                                onClick={() => handleConfirm(booking.id)}
+                              >
+                                <i className="fas fa-check"></i>
+                              </button>
+                              <button 
+                                className="btn btn-outline-danger"
+                                onClick={() => handleCancel(booking.id)}
+                              >
+                                <i className="fas fa-times"></i>
+                              </button>
+                            </>
+                          )}
+                          {booking.status === 'Approved' && (
+                            <button className="btn btn-outline-info">
+                              <i className="fas fa-qrcode"></i>
                             </button>
-                            <button 
-                              className="btn btn-outline-danger"
-                              onClick={() => handleCancel(booking.id)}
-                            >
-                              <i className="fas fa-times"></i>
-                            </button>
-                          </>
-                        )}
-                        {booking.status === 'Approved' && (
-                          <button className="btn btn-outline-info">
-                            <i className="fas fa-qrcode"></i>
-                          </button>
-                        )}
-                      </div>
-                    </td>
+                          )}
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

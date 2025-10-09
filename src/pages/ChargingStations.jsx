@@ -246,13 +246,6 @@ const ChargingStations = () => {
               <i className="fas fa-plus-circle me-2"></i>
               Create Station + Operator
             </button>
-            <button 
-              className="btn btn-primary"
-              onClick={() => setShowModal(true)}
-            >
-              <i className="fas fa-plus me-2"></i>
-              Add Station Only
-            </button>
           </div>
         )}
       </div>
