@@ -12,6 +12,7 @@ import Bookings from './pages/Bookings'
 import Users from './pages/Users'
 import StationOperations from './pages/StationOperations'
 import './styles/App.css'
+import ToastManager from './components/ToastManager'
 
 const ProtectedRoute = ({ children, requiredRole }) => {
   const { isAuthenticated, user, loading } = useAuth()
@@ -56,6 +57,7 @@ function App() {
     <AuthProvider>
       <Router>
         <div className="app">
+          <ToastManager />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import apiService from '../services/api'
 import LoadingSpinner from '../components/LoadingSpinner'
+import MapPicker from '../components/MapPicker'
 
 const CreateStationWithOperator = () => {
   const { isBackoffice } = useAuth()
@@ -26,6 +27,7 @@ const CreateStationWithOperator = () => {
 
   const [errors, setErrors] = useState({})
   const [, setSuccessMessage] = useState('')
+  const [, setSubmitting] = useState(false)
 
   if (!isBackoffice) {
     return (
@@ -97,9 +99,12 @@ const CreateStationWithOperator = () => {
     try {
       // Use OpenStreetMap Nominatim public API for geocoding (suitable for testing).
       // Note: Nominatim has usage limits and requires identifying info for heavy use.
-      const q = encodeURIComponent(city)
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1`
+      const url = `/api/geocoding?city=${encodeURIComponent(city)}`
       const res = await fetch(url, { method: 'GET' })
+      if (res.status === 429) {
+        setGeocodeError('Geocoding rate limit reached. Please try again in a moment.')
+        return
+      }
       if (!res.ok) throw new Error('Geocoding request failed')
       const data = await res.json()
       if (!data || data.length === 0) {
@@ -127,7 +132,9 @@ const CreateStationWithOperator = () => {
     if (!formData.address.trim()) newErrors.address = 'Address is required'
     if (!formData.city.trim()) newErrors.city = 'City is required'
     if (formData.totalSlots < 1) newErrors.totalSlots = 'Must have at least 1 slot'
-    if (isNaN(parseInt(formData.slotsPerDay)) || parseInt(formData.slotsPerDay) < 1) newErrors.slotsPerDay = 'Must have at least 1 slot per day'
+  const spd = parseInt(formData.slotsPerDay)
+  if (isNaN(spd) || spd < 1) newErrors.slotsPerDay = 'Must have at least 1 slot per day'
+  if (spd > 48) newErrors.slotsPerDay = 'Slots per day must be 48 or less'
     if (formData.latitude && isNaN(parseFloat(formData.latitude))) {
       newErrors.latitude = 'Invalid latitude format'
     }
@@ -146,6 +153,7 @@ const CreateStationWithOperator = () => {
       return
     }
 
+    setSubmitting(true)
     setLoading(true)
     setSuccessMessage('')
 
@@ -172,7 +180,9 @@ const CreateStationWithOperator = () => {
         stationName: formData.name
       })
 
-      setSuccessMessage(`Station "${formData.name}" created successfully with auto-generated operator credentials!`)
+  // success toast
+  window.__toast?.push(`Station "${formData.name}" created`, 'success')
+  setSuccessMessage(`Station "${formData.name}" created successfully with auto-generated operator credentials!`)
 
       // Reset form
       setFormData({
@@ -191,10 +201,13 @@ const CreateStationWithOperator = () => {
 
     } catch (error) {
       console.error('Error creating station:', error)
-      setErrors({ submit: error.response?.data?.message || 'Failed to create station. Please try again.' })
+      const msg = error.response?.data?.message || error.message || 'Failed to create station. Please try again.'
+      setErrors({ submit: msg })
       setGeneratedCredentials(null) // Clear credentials on error
+      window.__toast?.push(msg, 'error')
     } finally {
       setLoading(false)
+      setSubmitting(false)
     }
   }
 
@@ -369,21 +382,34 @@ const CreateStationWithOperator = () => {
                       {errors.city && <div className="invalid-feedback">{errors.city}</div>}
                     </div>
                     <div className="col-12 mb-3">
-                      <button
-                        type="button"
-                        className="btn btn-outline-secondary"
-                        onClick={handleGeocodeAddress}
-                        disabled={geocoding}
-                      >
-                        {geocoding ? (
-                          <span className="spinner-border spinner-border-sm me-2"></span>
-                        ) : (
-                          <i className="fas fa-search-location me-2"></i>
-                        )}
-                        Lookup coordinates from city
-                      </button>
-                      {geocodeError && <div className="text-danger small mt-1">{geocodeError}</div>}
-                    </div>
+                        <button
+                          type="button"
+                          className="btn btn-outline-secondary me-2"
+                          onClick={handleGeocodeAddress}
+                          disabled={geocoding}
+                        >
+                          {geocoding ? (
+                            <span className="spinner-border spinner-border-sm me-2"></span>
+                          ) : (
+                            <i className="fas fa-search-location me-2"></i>
+                          )}
+                          Lookup coordinates from city
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-outline-primary"
+                          onClick={handleUseCurrentLocation}
+                          disabled={locating}
+                        >
+                          {locating ? (
+                            <span className="spinner-border spinner-border-sm me-2"></span>
+                          ) : (
+                            <i className="fas fa-map-marker-alt me-2"></i>
+                          )}
+                          Use current location
+                        </button>
+                        {geocodeError && <div className="text-danger small mt-1">{geocodeError}</div>}
+                      </div>
                   </div>
 
                   <div className="row">
@@ -443,21 +469,16 @@ const CreateStationWithOperator = () => {
                     </div>
 
                     <div className="col-12 mb-3">
-                      <button
-                        type="button"
-                        className="btn btn-outline-primary"
-                        onClick={handleUseCurrentLocation}
-                        disabled={locating}
-                      >
-                        {locating ? (
-                          <span className="spinner-border spinner-border-sm me-2"></span>
-                        ) : (
-                          <i className="fas fa-map-marker-alt me-2"></i>
-                        )}
-                        Use current location
-                      </button>
                       <div className="form-text mt-2">Or enter latitude and longitude manually</div>
                       {locationError && <div className="text-danger small mt-1">{locationError}</div>}
+                    </div>
+
+                    <div className="col-12 mb-3">
+                      <MapPicker
+                        lat={formData.latitude || 6.9271}
+                        lon={formData.longitude || 79.8612}
+                        onChange={({ latitude, longitude }) => setFormData(prev => ({ ...prev, latitude: String(latitude), longitude: String(longitude) }))}
+                      />
                     </div>
                   </div>
                 </div>

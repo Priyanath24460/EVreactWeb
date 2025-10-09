@@ -4,6 +4,7 @@ import apiService from '../services/api'
 import Swal from 'sweetalert2'
 import LoadingSpinner from '../components/LoadingSpinner'
 import Modal from '../components/Modal'
+import MapPicker from '../components/MapPicker'
 
 const ChargingStations = () => {
   const [stations, setStations] = useState([])
@@ -61,18 +62,25 @@ const ChargingStations = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
+      // client-side validation for slotsPerDay
+      if (isNaN(parseInt(formData.slotsPerDay)) || parseInt(formData.slotsPerDay) < 1) {
+        return window.__toast?.push('Slots per day must be at least 1', 'error')
+      }
+      if (parseInt(formData.slotsPerDay) > 48) {
+        return window.__toast?.push('Slots per day must be 48 or less', 'error')
+      }
       if (editingStation) {
         await apiService.updateChargingStation(editingStation.id, formData)
-        Swal.fire('Success', 'Charging station updated successfully', 'success')
+        window.__toast?.push('Charging station updated', 'success')
       } else {
         await apiService.createChargingStation(formData)
-        Swal.fire('Success', 'Charging station created successfully', 'success')
+        window.__toast?.push('Charging station created', 'success')
       }
       setShowModal(false)
       resetForm()
       loadStations()
     } catch (error) {
-      Swal.fire('Error', error.response?.data || 'Operation failed', 'error')
+      window.__toast?.push(error.response?.data || 'Operation failed', 'error')
     }
   }
 
@@ -118,9 +126,12 @@ const ChargingStations = () => {
     setGeocodeError('')
     setGeocoding(true)
     try {
-      const q = encodeURIComponent(city)
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1`
+      const url = `/api/geocoding?city=${encodeURIComponent(city)}`
       const res = await fetch(url)
+      if (res.status === 429) {
+        setGeocodeError('Geocoding rate limit reached. Please try again later.')
+        return
+      }
       if (!res.ok) throw new Error('Geocoding request failed')
       const data = await res.json()
       if (!data || data.length === 0) {
@@ -476,6 +487,14 @@ const ChargingStations = () => {
               </button>
               {geocodeError && <div className="text-danger small mt-2">{geocodeError}</div>}
               {locationError && <div className="text-danger small mt-2">{locationError}</div>}
+            </div>
+
+            <div className="col-12 mb-3">
+              <MapPicker
+                lat={formData.location.latitude || 6.9271}
+                lon={formData.location.longitude || 79.8612}
+                onChange={({ latitude, longitude }) => setFormData(prev => ({ ...prev, location: { ...prev.location, latitude, longitude } }))}
+              />
             </div>
           </div>
 
