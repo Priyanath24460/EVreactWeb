@@ -83,8 +83,49 @@ class ApiService {
   }
 
   async updateEVOwnerStatus(nic, isActive) {
-    const response = await this.api.patch(`/evowners/${nic}/status`, { isActive })
-    return response.data
+    // Try the most common expected shape first ({ IsActive: bool }).
+    // Some deployed servers instead expect a raw boolean in the body (true/false).
+    // Attempt both shapes and return on first success.
+    // Some deployments expect a raw boolean (true/false) at the root. Try that first.
+    const attempts = [
+      { body: isActive, desc: 'raw boolean' },
+      { body: { IsActive: isActive }, desc: 'PascalCase object' }
+    ]
+
+    let lastErr = null
+    const attemptErrors = []
+    for (const attempt of attempts) {
+      try {
+        const response = await this.api.patch(`/evowners/${nic}/status`, attempt.body, {
+          headers: { 'Content-Type': 'application/json; charset=utf-8' }
+        })
+        if (response && response.data) response.data.__payloadUsed = attempt.desc
+        return response.data
+      } catch (err) {
+        lastErr = err
+        // collect errors for potential diagnostic use, but don't log here
+        attemptErrors.push({ desc: attempt.desc, status: err.response?.status, data: err.response?.data })
+        // continue to next attempt
+      }
+    }
+
+    // All attempts failed — rethrow last error for caller handling
+    // Before giving up, double-check the owner's current status on the server.
+    // Some deployments may return a 4xx but still apply the change; tolerate that.
+    try {
+      const owner = await this.getEVOwnerByNIC(nic)
+      const current = owner?.isActive ?? owner?.IsActive
+      if (typeof current === 'boolean' && current === isActive) {
+        // The server ended up in the desired state despite the earlier errors.
+        return { success: true, __payloadUsed: 'verified-after-failure' }
+      }
+    } catch {
+      // Verification failed — we'll show the collected errors below
+    }
+
+    // All attempts failed and verification didn't show the desired state — log collected errors and rethrow
+    // All attempts failed and verification didn't show the desired state — rethrow last error
+    throw lastErr
   }
 
   // Bookings API
