@@ -104,28 +104,28 @@ const Login = () => {
                 </button>
               </form>
 
-              <div className="mt-4 p-3 bg-light rounded">
+              {/* <div className="mt-4 p-3 bg-light rounded">
                 <small className="text-muted">
                   <strong>Demo Accounts:</strong><br/>
                   <span className="text-primary">Backoffice:</span> admin / admin123 <i className="fas fa-user-tie ms-1"></i><br/>
                   <span className="text-success">Station Operator:</span> (Created by Backoffice) <i className="fas fa-user-cog ms-1"></i>
                 </small>
-              </div>
+              </div> */}
 
               <div className="mt-3">
                 <small className="text-muted">
                   <i className="fas fa-info-circle me-1"></i>
-                  EV Owners: please register using the mobile application. Accounts must be activated by Backoffice staff before mobile login is allowed.
+                  EV Owners: please register using the mobile application. 
                 </small>
               </div>
 
               <div className="text-center mt-3">
-                <p className="mb-0">
+                {/* <p className="mb-0">
                   Need a Backoffice account?{' '}
                   <Link to="/register" className="text-decoration-none">
                     Register here
                   </Link>
-                </p>
+                </p> */}
                 <p className="mt-2 text-muted small">
                   <i className="fas fa-info-circle me-1"></i>
                   Station Operators receive login credentials from Backoffice

@@ -82,7 +82,7 @@ function App() {
               path="/charging-stations" 
               element={
                 // Allow both Backoffice and StationOperator to reach this page
-                // Page itself will render role-appropriate UI
+                // Page will render role-appropriate UI
                 <ProtectedRoute>
                   <ChargingStations />
                 </ProtectedRoute>

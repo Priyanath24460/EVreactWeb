@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         return { success: false, error: 'Invalid credentials' }
       }
-    } catch (error) {
+    } catch {
       return { success: false, error: 'Login failed' }
     }
   }

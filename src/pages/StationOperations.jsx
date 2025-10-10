@@ -30,7 +30,7 @@ const StationOperations = () => {
       setBookings(bookingsData.filter(booking => 
         booking.status === 'Approved' || booking.status === 'Pending'
       ))
-    } catch (error) {
+    } catch {
       Swal.fire('Error', 'Failed to load station data', 'error')
     } finally {
       setLoading(false)
@@ -71,7 +71,7 @@ const StationOperations = () => {
       } else {
         Swal.fire('Invalid QR Code', response.errorMessage || 'QR code is not valid', 'error')
       }
-    } catch (error) {
+    } catch {
       Swal.fire('Error', 'Failed to verify QR code', 'error')
     } finally {
       setQrScanning(false)
@@ -84,7 +84,7 @@ const StationOperations = () => {
       await apiService.completeBooking(bookingId, { qrData })
       Swal.fire('Success', 'Booking completed successfully!', 'success')
       await loadStationData() // Refresh data
-    } catch (error) {
+    } catch {
       Swal.fire('Error', 'Failed to complete booking', 'error')
     }
   }
@@ -108,7 +108,7 @@ const StationOperations = () => {
         Swal.fire('Success', 'Booking approved successfully!', 'success')
         await loadStationData()
       }
-    } catch (error) {
+    } catch {
       Swal.fire('Error', 'Failed to approve booking', 'error')
     }
   }

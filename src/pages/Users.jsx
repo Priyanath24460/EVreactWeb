@@ -29,7 +29,7 @@ const Users = () => {
     try {
       const data = await apiService.getUsers()
       setUsers(data)
-    } catch (error) {
+    } catch {
       Swal.fire('Error', 'Failed to load users', 'error')
     } finally {
       setLoading(false)
@@ -77,7 +77,7 @@ const Users = () => {
         await apiService.deleteUser(id)
         Swal.fire('Deleted!', 'User has been deleted.', 'success')
         loadUsers()
-      } catch (error) {
+      } catch {
         Swal.fire('Error', 'Failed to delete user', 'error')
       }
     }

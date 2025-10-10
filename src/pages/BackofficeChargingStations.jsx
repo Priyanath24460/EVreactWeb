@@ -6,6 +6,7 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import Modal from '../components/Modal'
 import MapPicker from '../components/MapPicker'
 
+
 const BackofficeChargingStations = () => {
   const [stations, setStations] = useState([])
   const [loading, setLoading] = useState(true)
