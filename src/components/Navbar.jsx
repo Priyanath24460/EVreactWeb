@@ -95,19 +95,19 @@ const Navbar = () => {
                 
                 <li className="nav-item">
                   <Link 
-                    className={`nav-link px-3 py-2 rounded-3 d-flex align-items-center gap-2 ${isActive('/charging-stations') ? 'fw-semibold' : ''}`} 
-                    to="/charging-stations"
-                    style={isActive('/charging-stations') ? { 
+                    className={`nav-link px-3 py-2 rounded-3 d-flex align-items-center gap-2 ${isActive('/backoffice/charging-stations') ? 'fw-semibold' : ''}`} 
+                    to="/backoffice/charging-stations"
+                    style={isActive('/backoffice/charging-stations') ? { 
                       backgroundColor: 'rgba(255,255,255,0.25)', 
                       boxShadow: '0 2px 8px rgba(0,0,0,0.1)' 
                     } : { transition: 'all 0.2s' }}
                     onMouseEnter={(e) => {
-                      if (!isActive('/charging-stations')) {
+                      if (!isActive('/backoffice/charging-stations')) {
                         e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.15)'
                       }
                     }}
                     onMouseLeave={(e) => {
-                      if (!isActive('/charging-stations')) {
+                      if (!isActive('/backoffice/charging-stations')) {
                         e.currentTarget.style.backgroundColor = 'transparent'
                       }
                     }}

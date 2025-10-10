@@ -40,7 +40,6 @@ const BackofficeDashboard = () => {
         completedBookings: completedBookings.length
       })
 
-      // Create recent activities summary
       const activities = [
         ...stations.slice(-5).map(s => ({
           type: 'station',
@@ -70,195 +69,280 @@ const BackofficeDashboard = () => {
   }
 
   return (
-    <div>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">
-          <i className="fas fa-tachometer-alt me-2 text-primary"></i>
-          Backoffice Dashboard
-        </h2>
-        <div className="d-flex align-items-center">
-          <span className="badge bg-primary fs-6 me-2">
-            <i className="fas fa-user-tie me-1"></i>
-            {user?.username}
-          </span>
-          <button className="btn btn-outline-primary btn-sm" onClick={loadBackofficeData}>
-            <i className="fas fa-sync me-1"></i>
-            Refresh
-          </button>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 p-md-6">
+      <div className="container-fluid" style={{ maxWidth: '1400px' }}>
+        {/* Header */}
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+          <div>
+            <h1 className="h2 fw-bold text-dark d-flex align-items-center gap-3 mb-2">
+              <span className="bg-success text-white p-3 rounded-3 shadow">
+                <i className="fas fa-tachometer-alt"></i>
+              </span>
+              Backoffice Dashboard
+            </h1>
+            <p className="text-muted mb-0 ms-1">Comprehensive system overview and management</p>
+          </div>
+          <div className="d-flex align-items-center gap-2">
+            <div className="bg-white px-3 py-2 rounded-3 shadow-sm border d-flex align-items-center gap-2">
+              <div className="bg-success bg-opacity-10 rounded-circle p-2" style={{ width: '32px', height: '32px' }}>
+                <i className="fas fa-user-tie text-success small"></i>
+              </div>
+              <span className="fw-medium text-dark">{user?.username}</span>
+            </div>
+            <button 
+              onClick={loadBackofficeData}
+              className="btn btn-white border shadow-sm d-flex align-items-center gap-2"
+            >
+              <i className="fas fa-sync small"></i>
+              Refresh
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* System Overview Stats */}
-      <div className="row mb-4">
-        <div className="col-md-3 col-sm-6 mb-3">
-          <div className="card bg-primary text-white">
-            <div className="card-body">
-              <div className="d-flex justify-content-between">
-                <div>
-                  <h4 className="card-title">{stats.totalEVOwners || 0}</h4>
-                  <p className="card-text">Total EV Owners</p>
+        {/* Primary Stats */}
+        <div className="row g-3 g-md-4 mb-4">
+          <div className="col-12 col-sm-6 col-lg-3">
+            <div className="card border-0 shadow-sm h-100" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+              <div className="card-body text-white">
+                <div className="d-flex justify-content-between align-items-start">
+                  <div>
+                    <p className="text-white-50 small fw-medium mb-1">Total EV Owners</p>
+                    <h2 className="display-5 fw-bold mb-0">{stats.totalEVOwners || 0}</h2>
+                  </div>
+                  <div className="bg-white bg-opacity-25 p-3 rounded-3">
+                    <i className="fas fa-users fa-2x"></i>
+                  </div>
                 </div>
-                <i className="fas fa-users fa-2x opacity-50"></i>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-12 col-sm-6 col-lg-3">
+            <div className="card border-0 shadow-sm h-100" style={{ background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' }}>
+              <div className="card-body text-white">
+                <div className="d-flex justify-content-between align-items-start">
+                  <div>
+                    <p className="text-white-50 small fw-medium mb-1">Active Operators</p>
+                    <h2 className="display-5 fw-bold mb-0">{stats.activeOperators || 0}</h2>
+                    <p className="text-white-50 small mb-0">Total: {stats.totalOperators || 0}</p>
+                  </div>
+                  <div className="bg-white bg-opacity-25 p-3 rounded-3">
+                    <i className="fas fa-user-cog fa-2x"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-12 col-sm-6 col-lg-3">
+            <div className="card border-0 shadow-sm h-100" style={{ background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)' }}>
+              <div className="card-body text-dark">
+                <div className="d-flex justify-content-between align-items-start">
+                  <div>
+                    <p className="text-secondary small fw-medium mb-1">Active Stations</p>
+                    <h2 className="display-5 fw-bold mb-0">{stats.activeStations || 0}</h2>
+                    <p className="small text-secondary mb-0">Total: {stats.totalStations || 0}</p>
+                  </div>
+                  <div className="bg-white bg-opacity-50 p-3 rounded-3">
+                    <i className="fas fa-charging-station fa-2x text-info"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-12 col-sm-6 col-lg-3">
+            <div className="card border-0 shadow-sm h-100" style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
+              <div className="card-body text-white">
+                <div className="d-flex justify-content-between align-items-start">
+                  <div>
+                    <p className="text-white-50 small fw-medium mb-1">Total Bookings</p>
+                    <h2 className="display-5 fw-bold mb-0">{stats.totalBookings || 0}</h2>
+                  </div>
+                  <div className="bg-white bg-opacity-25 p-3 rounded-3">
+                    <i className="fas fa-calendar fa-2x"></i>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="col-md-3 col-sm-6 mb-3">
-          <div className="card bg-info text-white">
-            <div className="card-body">
-              <div className="d-flex justify-content-between">
-                <div>
-                  <h4 className="card-title">{stats.activeOperators || 0}</h4>
-                  <p className="card-text">Active Operators</p>
-                  <small className="opacity-75">Total: {stats.totalOperators || 0}</small>
+        {/* Booking Status Overview */}
+        <div className="row g-3 g-md-4 mb-4">
+          <div className="col-12 col-md-4">
+            <div className="card border-0 shadow-sm border-start border-warning border-4">
+              <div className="card-body text-center py-4">
+                <div className="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-10 rounded-circle mb-3" style={{ width: '64px', height: '64px' }}>
+                  <i className="fas fa-clock fa-2x text-warning"></i>
                 </div>
-                <i className="fas fa-user-cog fa-2x opacity-50"></i>
+                <h2 className="display-5 fw-bold text-warning mb-2">{stats.pendingBookings || 0}</h2>
+                <p className="fw-semibold text-dark mb-1">Pending Bookings</p>
+                <small className="text-muted">Awaiting confirmation</small>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-12 col-md-4">
+            <div className="card border-0 shadow-sm border-start border-info border-4">
+              <div className="card-body text-center py-4">
+                <div className="d-inline-flex align-items-center justify-content-center bg-info bg-opacity-10 rounded-circle mb-3" style={{ width: '64px', height: '64px' }}>
+                  <i className="fas fa-check-circle fa-2x text-info"></i>
+                </div>
+                <h2 className="display-5 fw-bold text-info mb-2">{stats.approvedBookings || 0}</h2>
+                <p className="fw-semibold text-dark mb-1">Approved Bookings</p>
+                <small className="text-muted">Ready for charging</small>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-12 col-md-4">
+            <div className="card border-0 shadow-sm border-start border-success border-4">
+              <div className="card-body text-center py-4">
+                <div className="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-3" style={{ width: '64px', height: '64px' }}>
+                  <i className="fas fa-check-double fa-2x text-success"></i>
+                </div>
+                <h2 className="display-5 fw-bold text-success mb-2">{stats.completedBookings || 0}</h2>
+                <p className="fw-semibold text-dark mb-1">Completed Bookings</p>
+                <small className="text-muted">Successfully finished</small>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="col-md-3 col-sm-6 mb-3">
-          <div className="card bg-success text-white">
-            <div className="card-body">
-              <div className="d-flex justify-content-between">
-                <div>
-                  <h4 className="card-title">{stats.activeStations || 0}</h4>
-                  <p className="card-text">Active Stations</p>
-                  <small className="opacity-75">Total: {stats.totalStations || 0}</small>
-                </div>
-                <i className="fas fa-charging-station fa-2x opacity-50"></i>
+        {/* Management Actions */}
+        <div className="card border-0 shadow-sm mb-4">
+          <div className="card-body p-4">
+            <h5 className="card-title fw-bold mb-4 d-flex align-items-center gap-2">
+              <i className="fas fa-tools text-success"></i>
+              System Management
+            </h5>
+            <div className="row g-3">
+              <div className="col-12 col-md-3">
+                <a 
+                  href="/charging-stations" 
+                  className="d-flex align-items-center gap-3 p-3 text-decoration-none rounded-3 border-2 border-success bg-success bg-opacity-10 border h-100"
+                  style={{ transition: 'all 0.2s' }}
+                  onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  <div className="bg-success text-white p-3 rounded-3">
+                    <i className="fas fa-plus fa-lg"></i>
+                  </div>
+                  <div>
+                    <p className="fw-semibold text-dark mb-0">Create New Station</p>
+                    <small className="text-muted">Add charging points</small>
+                  </div>
+                </a>
+              </div>
+
+              <div className="col-12 col-md-3">
+                <a 
+                  href="/station-operations" 
+                  className="d-flex align-items-center gap-3 p-3 text-decoration-none rounded-3 border-2 border-info bg-info bg-opacity-10 border h-100"
+                  style={{ transition: 'all 0.2s' }}
+                  onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  <div className="bg-info text-white p-3 rounded-3">
+                    <i className="fas fa-user-plus fa-lg"></i>
+                  </div>
+                  <div>
+                    <p className="fw-semibold text-dark mb-0">Manage Operators</p>
+                    <small className="text-muted">Station operators</small>
+                  </div>
+                </a>
+              </div>
+
+              <div className="col-12 col-md-3">
+                <a 
+                  href="/ev-owners" 
+                  className="d-flex align-items-center gap-3 p-3 text-decoration-none rounded-3 border-2 border-warning bg-warning bg-opacity-10 border h-100"
+                  style={{ transition: 'all 0.2s' }}
+                  onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  <div className="bg-warning text-white p-3 rounded-3">
+                    <i className="fas fa-users fa-lg"></i>
+                  </div>
+                  <div>
+                    <p className="fw-semibold text-dark mb-0">Manage EV Owners</p>
+                    <small className="text-muted">Customer accounts</small>
+                  </div>
+                </a>
+              </div>
+
+              <div className="col-12 col-md-3">
+                <a 
+                  href="/bookings" 
+                  className="d-flex align-items-center gap-3 p-3 text-decoration-none rounded-3 border-2 border-primary bg-primary bg-opacity-10 border h-100"
+                  style={{ transition: 'all 0.2s' }}
+                  onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  <div className="bg-primary text-white p-3 rounded-3">
+                    <i className="fas fa-calendar fa-lg"></i>
+                  </div>
+                  <div>
+                    <p className="fw-semibold text-dark mb-0">All Bookings</p>
+                    <small className="text-muted">View reservations</small>
+                  </div>
+                </a>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="col-md-3 col-sm-6 mb-3">
-          <div className="card bg-warning text-dark">
-            <div className="card-body">
-              <div className="d-flex justify-content-between">
-                <div>
-                  <h4 className="card-title">{stats.totalBookings || 0}</h4>
-                  <p className="card-text">Total Bookings</p>
-                </div>
-                <i className="fas fa-calendar fa-2x opacity-50"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Booking Status Overview */}
-      <div className="row mb-4">
-        <div className="col-md-4 mb-3">
-          <div className="card border-warning">
-            <div className="card-body text-center">
-              <h3 className="text-warning">{stats.pendingBookings || 0}</h3>
-              <p className="card-text">Pending Bookings</p>
-              <i className="fas fa-clock fa-2x text-warning opacity-50"></i>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-md-4 mb-3">
-          <div className="card border-info">
-            <div className="card-body text-center">
-              <h3 className="text-info">{stats.approvedBookings || 0}</h3>
-              <p className="card-text">Approved Bookings</p>
-              <i className="fas fa-check-circle fa-2x text-info opacity-50"></i>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-md-4 mb-3">
-          <div className="card border-success">
-            <div className="card-body text-center">
-              <h3 className="text-success">{stats.completedBookings || 0}</h3>
-              <p className="card-text">Completed Bookings</p>
-              <i className="fas fa-check-double fa-2x text-success opacity-50"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Management Actions */}
-      <div className="row mb-4">
-        <div className="col-12">
-          <div className="card">
-            <div className="card-header">
-              <h5 className="card-title mb-0">
-                <i className="fas fa-tools me-2"></i>
-                System Management
-              </h5>
-            </div>
-            <div className="card-body">
-              <div className="row">
-                <div className="col-md-3 col-sm-6 mb-2">
-                  <a href="/charging-stations" className="btn btn-primary w-100">
-                    <i className="fas fa-plus me-2"></i>
-                    Create New Station
-                  </a>
-                </div>
-                <div className="col-md-3 col-sm-6 mb-2">
-                  <a href="/station-operations" className="btn btn-success w-100">
-                    <i className="fas fa-user-plus me-2"></i>
-                    Manage Operators
-                  </a>
-                </div>
-                <div className="col-md-3 col-sm-6 mb-2">
-                  <a href="/ev-owners" className="btn btn-info w-100">
-                    <i className="fas fa-users me-2"></i>
-                    Manage EV Owners
-                  </a>
-                </div>
-                <div className="col-md-3 col-sm-6 mb-2">
-                  <a href="/bookings" className="btn btn-warning w-100">
-                    <i className="fas fa-calendar me-2"></i>
-                    All Bookings
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Activities */}
-      <div className="row">
-        <div className="col-12">
-          <div className="card">
-            <div className="card-header">
-              <h5 className="card-title mb-0">
-                <i className="fas fa-history me-2"></i>
-                Recent System Activities
-              </h5>
-            </div>
-            <div className="card-body">
-              {recentActivities.length > 0 ? (
-                <div className="list-group list-group-flush">
-                  {recentActivities.map((activity, index) => (
-                    <div key={index} className="list-group-item d-flex justify-content-between align-items-center">
-                      <div className="d-flex align-items-center">
-                        <i className={`fas ${activity.type === 'station' ? 'fa-charging-station' : 'fa-calendar'} me-3 ${activity.type === 'station' ? 'text-primary' : 'text-success'}`}></i>
-                        <div>
-                          <strong>{activity.item}</strong> was {activity.action}
-                          <br />
-                          <small className="text-muted">
-                            {new Date(activity.date).toLocaleDateString()} at {new Date(activity.date).toLocaleTimeString()}
-                          </small>
+        {/* Recent Activities */}
+        <div className="card border-0 shadow-sm">
+          <div className="card-body p-4">
+            <h5 className="card-title fw-bold mb-4 d-flex align-items-center gap-2">
+              <i className="fas fa-history text-success"></i>
+              Recent System Activities
+            </h5>
+            {recentActivities.length > 0 ? (
+              <div className="row g-3">
+                {recentActivities.map((activity, index) => (
+                  <div key={index} className="col-12">
+                    <div className="border rounded-3 p-3 bg-light bg-opacity-50" style={{ transition: 'all 0.2s' }}>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <div className="d-flex align-items-center gap-3">
+                          <div 
+                            className={`d-inline-flex align-items-center justify-content-center rounded-circle ${
+                              activity.type === 'station' ? 'bg-success bg-opacity-10' : 'bg-info bg-opacity-10'
+                            }`} 
+                            style={{ width: '48px', height: '48px' }}
+                          >
+                            <i className={`fas ${activity.type === 'station' ? 'fa-charging-station text-success' : 'fa-calendar text-info'} fa-lg`}></i>
+                          </div>
+                          <div>
+                            <p className="fw-semibold text-dark mb-1">
+                              {activity.item} <span className="fw-normal text-muted">was {activity.action}</span>
+                            </p>
+                            <small className="text-muted">
+                              {new Date(activity.date).toLocaleDateString()} at {new Date(activity.date).toLocaleTimeString()}
+                            </small>
+                          </div>
                         </div>
+                        <span className={`badge ${activity.type === 'station' ? 'bg-success' : 'bg-info'} px-3 py-2`}>
+                          {activity.type}
+                        </span>
                       </div>
-                      <span className={`badge ${activity.type === 'station' ? 'bg-primary' : 'bg-success'}`}>
-                        {activity.type}
-                      </span>
                     </div>
-                  ))}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-5">
+                <div className="d-inline-flex align-items-center justify-content-center bg-light rounded-circle mb-4" style={{ width: '96px', height: '96px' }}>
+                  <i className="fas fa-inbox fa-3x text-muted"></i>
                 </div>
-              ) : (
-                <p className="text-muted text-center py-4">No recent activities found.</p>
-              )}
-            </div>
+                <h4 className="fw-bold text-dark mb-3">No Recent Activities</h4>
+                <p className="text-muted mb-0" style={{ maxWidth: '500px', margin: '0 auto' }}>
+                  No recent system activities found. Activities will appear here as users interact with the system.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -267,3 +351,4 @@ const BackofficeDashboard = () => {
 }
 
 export default BackofficeDashboard
+
