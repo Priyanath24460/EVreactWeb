@@ -202,6 +202,7 @@ const EVOwners = () => {
           <i className="fas fa-users me-2 text-primary"></i>
           EV Owners Management
         </h2>
+        {/*
         <button 
           className="btn btn-primary"
           onClick={() => setShowModal(true)}
@@ -209,6 +210,7 @@ const EVOwners = () => {
           <i className="fas fa-plus me-2"></i>
           Add EV Owner
         </button>
+        */}
       </div>
 
       <div className="card">

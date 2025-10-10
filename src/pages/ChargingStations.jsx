@@ -244,7 +244,7 @@ const ChargingStations = () => {
               onClick={() => window.location.href = '/create-station-with-operator'}
             >
               <i className="fas fa-plus-circle me-2"></i>
-              Create Station + Operator
+              Create a new Station with Operator
             </button>
           </div>
         )}
