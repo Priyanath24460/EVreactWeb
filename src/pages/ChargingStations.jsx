@@ -62,7 +62,6 @@ const ChargingStations = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      // client-side validation for slotsPerDay
       if (isNaN(parseInt(formData.slotsPerDay)) || parseInt(formData.slotsPerDay) < 1) {
         return window.__toast?.push('Slots per day must be at least 1', 'error')
       }
@@ -230,151 +229,253 @@ const ChargingStations = () => {
   if (loading) return <LoadingSpinner text="Loading charging stations..." />
 
   return (
-    <div>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>
-          <i className="fas fa-charging-station me-2 text-primary"></i>
-          Charging Stations Management
-        </h2>
-        {/* Backoffice controls only */}
-        {isBackoffice && (
-          <div className="btn-group">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 p-md-6">
+      <div className="container-fluid px-4">
+        {/* Header */}
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-5 gap-3">
+          <div>
+            <h1 className="h2 fw-bold text-dark d-flex align-items-center gap-3 mb-2">
+              <span className="bg-primary text-white p-3 rounded-3 shadow">
+                <i className="fas fa-charging-station"></i>
+              </span>
+              Charging Stations Management
+            </h1>
+            <p className="text-muted mb-0 ms-1">Manage all charging stations and operators</p>
+          </div>
+          {isBackoffice && (
             <button 
-              className="btn btn-success"
+              className="btn btn-success px-4 py-3 shadow-sm d-flex align-items-center gap-2 fs-5"
               onClick={() => window.location.href = '/create-station-with-operator'}
             >
-              <i className="fas fa-plus-circle me-2"></i>
-              Create a new Station with Operator
+              <i className="fas fa-plus-circle"></i>
+              Create Station with Operator
             </button>
+          )}
+        </div>
+
+        {/* Stations List */}
+        {stations.length === 0 ? (
+          <div className="card border-0 shadow-sm">
+            <div className="card-body text-center py-5">
+              <div className="d-inline-flex align-items-center justify-content-center bg-light rounded-circle mb-4" style={{ width: '96px', height: '96px' }}>
+                <i className="fas fa-charging-station fa-3x text-muted"></i>
+              </div>
+              <h4 className="fw-bold text-dark mb-3">No Charging Stations</h4>
+              <p className="text-muted mb-4">Get started by creating your first charging station.</p>
+            </div>
+          </div>
+        ) : (
+          <div className="d-flex flex-column gap-4">
+            {stations.map(station => (
+              <div key={station.id} className="card border-0 shadow-sm">
+                {/* Station Header Bar */}
+                <div 
+                  className="p-4" 
+                  style={{ 
+                    background: station.isActive 
+                      ? 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' 
+                      : 'linear-gradient(135deg, #dc3545 0%, #fd7e14 100%)'
+                  }}
+                >
+                  <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div className="d-flex align-items-center gap-4">
+                      <div className="bg-white bg-opacity-25 p-4 rounded-3">
+                        <i className="fas fa-charging-station fa-2x text-white"></i>
+                      </div>
+                      <div>
+                        <h3 className="text-white fw-bold mb-2">{station.name}</h3>
+                        <div className="d-flex gap-2 align-items-center">
+                          <span className={`badge ${station.stationType === 'AC' ? 'bg-info' : 'bg-warning text-dark'} px-3 py-2 fs-6`}>
+                            {station.stationType} Charging
+                          </span>
+                          <span className={`badge ${station.isActive ? 'bg-white text-success' : 'bg-danger'} px-3 py-2 fs-6`}>
+                            {station.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="d-flex gap-2">
+                      <button 
+                        className="btn btn-light px-4 py-2"
+                        onClick={() => handleEdit(station)}
+                      >
+                        <i className="fas fa-edit me-2"></i>Edit
+                      </button>
+                      {station.isActive && (
+                        <button 
+                          className="btn btn-warning px-4 py-2"
+                          onClick={() => handleDeactivate(station.id)}
+                        >
+                          <i className="fas fa-ban me-2"></i>Deactivate
+                        </button>
+                      )}
+                      <button 
+                        className="btn btn-danger px-4 py-2"
+                        onClick={() => handleDelete(station.id)}
+                      >
+                        <i className="fas fa-trash me-2"></i>Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Station Content */}
+                <div className="card-body p-5">
+                  <div className="row g-5">
+                    {/* Location Section */}
+                    <div className="col-12 col-lg-4">
+                      <div className="h-100">
+                        <div className="d-flex align-items-center gap-3 mb-4">
+                          <div className="bg-danger bg-opacity-10 p-3 rounded-3">
+                            <i className="fas fa-map-marker-alt fa-2x text-danger"></i>
+                          </div>
+                          <div>
+                            <h5 className="fw-bold mb-0">Location</h5>
+                            <small className="text-muted">Station Address</small>
+                          </div>
+                        </div>
+                        <div className="bg-light p-4 rounded-3 h-100">
+                          <div className="mb-3">
+                            <label className="text-muted small fw-semibold mb-2 d-block">CITY</label>
+                            <p className="fs-5 fw-bold text-dark mb-0">{station.location.city}</p>
+                          </div>
+                          <div className="mb-3">
+                            <label className="text-muted small fw-semibold mb-2 d-block">ADDRESS</label>
+                            <p className="text-dark mb-0">{station.location.address}</p>
+                          </div>
+                          <div>
+                            <label className="text-muted small fw-semibold mb-2 d-block">COORDINATES</label>
+                            <p className="text-dark mb-0 font-monospace small">
+                              <i className="fas fa-globe me-2"></i>
+                              {station.location.latitude?.toFixed(4)}, {station.location.longitude?.toFixed(4)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Capacity Section */}
+                    <div className="col-12 col-lg-4">
+                      <div className="h-100">
+                        <div className="d-flex align-items-center gap-3 mb-4">
+                          <div className="bg-primary bg-opacity-10 p-3 rounded-3">
+                            <i className="fas fa-plug fa-2x text-primary"></i>
+                          </div>
+                          <div>
+                            <h5 className="fw-bold mb-0">Capacity</h5>
+                            <small className="text-muted">Available Resources</small>
+                          </div>
+                        </div>
+                        
+                        <div className="row g-3 mb-3">
+                          <div className="col-6">
+                            <div className="bg-primary bg-opacity-10 p-4 rounded-3 text-center">
+                              <i className="fas fa-plug fa-2x text-primary mb-3"></i>
+                              <p className="text-muted small mb-2 fw-semibold">PHYSICAL SOCKETS</p>
+                              <h2 className="display-4 fw-bold text-primary mb-0">{station.totalSlots}</h2>
+                            </div>
+                          </div>
+                          <div className="col-6">
+                            <div className="bg-success bg-opacity-10 p-4 rounded-3 text-center">
+                              <i className="fas fa-clock fa-2x text-success mb-3"></i>
+                              <p className="text-muted small mb-2 fw-semibold">TIME SLOTS</p>
+                              <h2 className="display-4 fw-bold text-success mb-0">{station.availableSlots?.length || 0}</h2>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {station.availableSlots && (
+                          <div className="bg-light p-3 rounded-3 text-center">
+                            <i className="fas fa-check-circle text-success me-2"></i>
+                            <span className="fw-bold text-success fs-5">
+                              {station.availableSlots.filter(s => s.isAvailable).length}
+                            </span>
+                            <span className="text-muted ms-2">slots currently available</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Operator Section */}
+                    <div className="col-12 col-lg-4">
+                      <div className="h-100">
+                        <div className="d-flex align-items-center gap-3 mb-4">
+                          <div className="bg-purple bg-opacity-10 p-3 rounded-3" style={{ backgroundColor: 'rgba(111, 66, 193, 0.1)' }}>
+                            <i className="fas fa-user-cog fa-2x" style={{ color: '#6f42c1' }}></i>
+                          </div>
+                          <div>
+                            <h5 className="fw-bold mb-0">Station Operator</h5>
+                            <small className="text-muted">Login Credentials</small>
+                          </div>
+                        </div>
+                        
+                        {station.assignedOperatorUsername ? (
+                          <div className="bg-light p-4 rounded-3">
+                            <div className="mb-4">
+                              <label className="text-muted small fw-semibold mb-2 d-block text-uppercase">Username</label>
+                              <div className="input-group">
+                                <input 
+                                  type="text" 
+                                  className="form-control form-control-lg bg-white border-0 shadow-sm" 
+                                  value={station.assignedOperatorUsername} 
+                                  readOnly 
+                                />
+                                <button 
+                                  className="btn btn-outline-secondary border-0 shadow-sm px-4" 
+                                  type="button"
+                                  onClick={() => navigator.clipboard.writeText(station.assignedOperatorUsername)}
+                                  title="Copy username"
+                                >
+                                  <i className="fas fa-copy"></i>
+                                </button>
+                              </div>
+                            </div>
+                            
+                            <div className="mb-4">
+                              <label className="text-muted small fw-semibold mb-2 d-block text-uppercase">Password</label>
+                              <div className="input-group">
+                                <input 
+                                  type="text" 
+                                  className="form-control form-control-lg bg-white border-0 shadow-sm" 
+                                  value={station.assignedOperatorPassword || 'Not Available'} 
+                                  readOnly 
+                                />
+                                <button 
+                                  className="btn btn-outline-secondary border-0 shadow-sm px-4" 
+                                  type="button"
+                                  onClick={() => navigator.clipboard.writeText(station.assignedOperatorPassword || '')}
+                                  title="Copy password"
+                                >
+                                  <i className="fas fa-copy"></i>
+                                </button>
+                              </div>
+                            </div>
+                            
+                            <button 
+                              className="btn btn-warning w-100 py-3 fw-bold"
+                              onClick={() => handleEditOperator(station)}
+                            >
+                              <i className="fas fa-edit me-2"></i>
+                              Edit Credentials
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="bg-light p-5 rounded-3 text-center h-100 d-flex flex-column justify-content-center">
+                            <i className="fas fa-user-slash fa-3x text-muted mb-3 opacity-50"></i>
+                            <p className="text-muted mb-0 fw-semibold">No operator assigned to this station</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
 
-      <div className="row">
-        {stations.map(station => (
-          <div key={station.id} className="col-md-6 col-lg-4 mb-4">
-            <div className={`card h-100 ${station.isActive ? 'border-success' : 'border-danger'}`}>
-              <div className="card-header d-flex justify-content-between align-items-center">
-                <h5 className="card-title mb-0">{station.name}</h5>
-                <span className={`badge ${station.stationType === 'AC' ? 'bg-info' : 'bg-warning'}`}>
-                  {station.stationType}
-                </span>
-              </div>
-              <div className="card-body">
-                <p className="card-text">
-                  <i className="fas fa-map-marker-alt text-muted me-2"></i>
-                  {station.location.address}, {station.location.city}
-                </p>
-                <p className="card-text">
-                  <i className="fas fa-plug text-muted me-2"></i>
-                  <strong>{station.totalSlots}</strong> total physical sockets
-                </p>
-                <p className="card-text">
-                  <i className="fas fa-clock text-muted me-2"></i>
-                  <strong>{station.availableSlots?.length || 0}</strong> scheduled time slots
-                  {station.availableSlots && (
-                    <div>
-                      <small className="text-muted">
-                        {station.availableSlots.filter(s => s.isAvailable).length} available
-                      </small>
-                    </div>
-                  )}
-                </p>
-                
-                {/* Operator Credentials Section */}
-                {station.assignedOperatorUsername && (
-                  <div className="operator-credentials mb-3">
-                    <h6 className="text-muted mb-2">
-                      <i className="fas fa-user-cog me-2"></i>
-                      Station Operator
-                    </h6>
-                    <div className="row g-2">
-                      <div className="col-12">
-                        <div className="input-group input-group-sm">
-                          <span className="input-group-text">Username</span>
-                          <input 
-                            type="text" 
-                            className="form-control" 
-                            value={station.assignedOperatorUsername} 
-                            readOnly 
-                          />
-                          <button 
-                            className="btn btn-outline-secondary" 
-                            type="button"
-                            onClick={() => navigator.clipboard.writeText(station.assignedOperatorUsername)}
-                            title="Copy username"
-                          >
-                            <i className="fas fa-copy"></i>
-                          </button>
-                        </div>
-                      </div>
-                      <div className="col-12">
-                        <div className="input-group input-group-sm">
-                          <span className="input-group-text">Password</span>
-                          <input 
-                            type="text" 
-                            className="form-control" 
-                            value={station.assignedOperatorPassword || 'Not Available'} 
-                            readOnly 
-                          />
-                          <button 
-                            className="btn btn-outline-secondary" 
-                            type="button"
-                            onClick={() => navigator.clipboard.writeText(station.assignedOperatorPassword || '')}
-                            title="Copy password"
-                          >
-                            <i className="fas fa-copy"></i>
-                          </button>
-                        </div>
-                      </div>
-                      <div className="col-12">
-                        <button 
-                          className="btn btn-sm btn-warning w-100"
-                          onClick={() => handleEditOperator(station)}
-                        >
-                          <i className="fas fa-edit me-1"></i>
-                          Edit Operator Credentials
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                <div className="mb-2">
-                  <span className={`badge ${station.isActive ? 'bg-success' : 'bg-danger'}`}>
-                    {station.isActive ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
-              </div>
-              <div className="card-footer">
-                <div className="btn-group w-100">
-                  <button 
-                    className="btn btn-outline-primary btn-sm"
-                    onClick={() => handleEdit(station)}
-                  >
-                    <i className="fas fa-edit me-1"></i>Edit
-                  </button>
-                  {station.isActive && (
-                    <button 
-                      className="btn btn-outline-warning btn-sm"
-                      onClick={() => handleDeactivate(station.id)}
-                    >
-                      <i className="fas fa-ban me-1"></i>Deactivate
-                    </button>
-                  )}
-                  <button 
-                    className="btn btn-outline-danger btn-sm"
-                    onClick={() => handleDelete(station.id)}
-                  >
-                    <i className="fas fa-trash me-1"></i>Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
+      {/* Edit Station Modal */}
       <Modal
         show={showModal}
         onClose={() => {
@@ -384,7 +485,7 @@ const ChargingStations = () => {
         title={editingStation ? 'Edit Charging Station' : 'Add New Charging Station'}
         size="lg"
       >
-        <form onSubmit={handleSubmit}>
+        <div>
           <div className="row">
             <div className="col-md-6">
               <div className="mb-3">
@@ -548,14 +649,22 @@ const ChargingStations = () => {
           </div>
 
           <div className="d-flex justify-content-end gap-2">
-            <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
+            <button 
+              type="button" 
+              className="btn btn-secondary" 
+              onClick={() => { setShowModal(false); resetForm(); }}
+            >
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary">
+            <button 
+              type="button" 
+              className="btn btn-primary"
+              onClick={handleSubmit}
+            >
               {editingStation ? 'Update' : 'Create'} Station
             </button>
           </div>
-        </form>
+        </div>
       </Modal>
 
       {/* Operator Credentials Edit Modal */}
@@ -565,7 +674,7 @@ const ChargingStations = () => {
         title="Edit Operator Credentials"
         size="md"
       >
-        <form onSubmit={handleOperatorSubmit}>
+        <div>
           <div className="mb-3">
             <label className="form-label">Station Name</label>
             <input
@@ -608,12 +717,16 @@ const ChargingStations = () => {
             <button type="button" className="btn btn-secondary" onClick={resetOperatorForm}>
               Cancel
             </button>
-            <button type="submit" className="btn btn-warning">
+            <button 
+              type="button" 
+              className="btn btn-warning"
+              onClick={handleOperatorSubmit}
+            >
               <i className="fas fa-save me-2"></i>
               Update Credentials
             </button>
           </div>
-        </form>
+        </div>
       </Modal>
     </div>
   )
