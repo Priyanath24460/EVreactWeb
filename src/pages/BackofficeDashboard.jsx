@@ -236,7 +236,7 @@ const BackofficeDashboard = () => {
                 </a>
               </div>
 
-              <div className="col-12 col-md-3">
+              {/* <div className="col-12 col-md-3">
                 <a 
                   href="/station-operations" 
                   className="d-flex align-items-center gap-3 p-3 text-decoration-none rounded-3 border-2 border-info bg-info bg-opacity-10 border h-100"
@@ -252,7 +252,7 @@ const BackofficeDashboard = () => {
                     <small className="text-muted">Station operators</small>
                   </div>
                 </a>
-              </div>
+              </div> */}
 
               <div className="col-12 col-md-3">
                 <a 

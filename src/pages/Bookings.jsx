@@ -137,71 +137,7 @@ const Bookings = () => {
     }
   }
 
-  const handleCancel = async (id) => {
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You want to cancel this booking?",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, cancel it!'
-    })
-
-    if (result.isConfirmed) {
-      try {
-        // Check reservation time to enforce 12 hour rule
-        const booking = bookings.find(b => b.id === id)
-        if (booking) {
-          const reservationDt = new Date(booking.startTime)
-          const twelveHoursBefore = new Date(reservationDt.getTime() - 12 * 60 * 60 * 1000)
-          const now = new Date()
-          if (now > twelveHoursBefore) {
-            Swal.fire('Too Late', 'Bookings can only be cancelled at least 12 hours before the reservation', 'warning')
-            return
-          }
-        }
-
-        // Optionally ask server whether cancellation is allowed
-        const canModify = await apiService.canModifyBooking(id).catch(() => ({ canModify: true }))
-        if (canModify && canModify.canModify === false) {
-          Swal.fire('Cannot Cancel', canModify.message || 'Booking cannot be cancelled', 'warning')
-          return
-        }
-
-        await apiService.cancelBooking(id)
-        Swal.fire('Cancelled!', 'Booking has been cancelled.', 'success')
-        loadData()
-      } catch (error) {
-        Swal.fire('Error', error.response?.data || 'Cancellation failed', 'error')
-      }
-    }
-  }
-
-  const handleConfirm = async (id) => {
-    const booking = bookings.find(b => b.id === id)
-    if (!booking) return
-
-    const result = await Swal.fire({
-      title: 'Confirm booking?',
-      text: 'Mark this booking as Approved?',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, confirm',
-    })
-
-    if (!result.isConfirmed) return
-
-    try {
-      // update status to Approved; backend may support a specific endpoint instead
-      await apiService.updateBooking(id, { ...booking, status: 'Approved' })
-      Swal.fire('Confirmed', 'Booking marked as Approved', 'success')
-      loadData()
-    } catch (err) {
-      console.error(err)
-      Swal.fire('Error', err.response?.data || 'Could not confirm booking', 'error')
-    }
-  }
+  // action handlers removed — no action column for booking operators
 
   const getStatusBadge = (status) => {
     const statusConfig = {
@@ -241,15 +177,15 @@ const Bookings = () => {
             </h2>
             <p className="text-muted mb-0 ms-1">Manage and monitor all booking reservations</p>
           </div>
-          {isBackoffice && (
-            <button 
-              className="btn btn-primary btn-lg shadow-sm d-flex align-items-center gap-2"
-              onClick={() => setShowModal(true)}
-            >
-              <i className="fas fa-plus-circle"></i>
-              <span>New Booking</span>
-            </button>
-          )}
+          {/* {isBackoffice && (
+            // <button 
+            //   className="btn btn-primary btn-lg shadow-sm d-flex align-items-center gap-2"
+            //   onClick={() => setShowModal(true)}
+            // >
+            //   <i className="fas fa-plus-circle"></i>
+            //   <span>New Booking</span>
+            // </button>
+          )} */}
         </div>
 
         {/* Bookings Table Card */}
@@ -265,7 +201,6 @@ const Bookings = () => {
                     <th className="px-4 py-3 fw-semibold text-dark">Reservation Date</th>
                     <th className="px-4 py-3 fw-semibold text-dark">Duration</th>
                     <th className="px-4 py-3 fw-semibold text-dark">Status</th>
-                    {!isBackoffice && <th className="px-4 py-3 fw-semibold text-dark">Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -320,41 +255,7 @@ const Bookings = () => {
                             {booking.status}
                           </span>
                         </td>
-                        {!isBackoffice && (
-                          <td className="px-4 py-3">
-                            <div className="d-flex gap-2">
-                              {booking.status === 'Pending' && (
-                                <>
-                                  <button
-                                    className="btn btn-success btn-sm d-flex align-items-center gap-1"
-                                    onClick={() => handleConfirm(booking.id)}
-                                    title="Approve Booking"
-                                  >
-                                    <i className="fas fa-check"></i>
-                                    <span className="d-none d-lg-inline">Approve</span>
-                                  </button>
-                                  <button 
-                                    className="btn btn-danger btn-sm d-flex align-items-center gap-1"
-                                    onClick={() => handleCancel(booking.id)}
-                                    title="Cancel Booking"
-                                  >
-                                    <i className="fas fa-times"></i>
-                                    <span className="d-none d-lg-inline">Cancel</span>
-                                  </button>
-                                </>
-                              )}
-                              {booking.status === 'Approved' && (
-                                <button 
-                                  className="btn btn-info btn-sm d-flex align-items-center gap-1"
-                                  title="View QR Code"
-                                >
-                                  <i className="fas fa-qrcode"></i>
-                                  <span className="d-none d-lg-inline">QR Code</span>
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        )}
+                        {/* actions removed for booking operators */}
                       </tr>
                     ))
                   )}
