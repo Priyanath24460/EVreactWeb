@@ -32,15 +32,18 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     return <Navigate to="/login" />
   }
   
-  if (requiredRole && user.role !== requiredRole) {
-    return (
-      <div className="container mt-5">
-        <div className="alert alert-danger">
-          <i className="fas fa-ban me-2"></i>
-          Access denied. You don't have permission to view this page.
+  if (requiredRole) {
+    const allowed = Array.isArray(requiredRole) ? requiredRole : [requiredRole]
+    if (!allowed.includes(user.role)) {
+      return (
+        <div className="container mt-5">
+          <div className="alert alert-danger">
+            <i className="fas fa-ban me-2"></i>
+            Access denied. You don't have permission to view this page.
+          </div>
         </div>
-      </div>
-    )
+      )
+    }
   }
   
   return (
@@ -123,7 +126,7 @@ function App() {
             <Route 
               path="/station-operations" 
               element={
-                <ProtectedRoute requiredRole="StationOperator">
+                <ProtectedRoute requiredRole={["Backoffice","StationOperator"]}>
                   <StationOperations />
                 </ProtectedRoute>
               } 

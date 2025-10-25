@@ -85,7 +85,7 @@ const Bookings = () => {
     try {
       if (editingBooking) {
         // Prevent updates within 12 hours of reservation
-        const reservationDt = new Date(editingBooking.reservationDateTime)
+        const reservationDt = new Date(editingBooking.startTime)
         const twelveHoursBefore = new Date(reservationDt.getTime() - 12 * 60 * 60 * 1000)
         const now = new Date()
 
@@ -100,10 +100,33 @@ const Bookings = () => {
           Swal.fire('Cannot Modify', canModify.message || 'Booking cannot be modified', 'warning')
           return
         }
-        await apiService.updateBooking(editingBooking.id, formData)
+        // Map formData reservationDateTime -> startTime/endTime for backend model
+        const start = new Date(formData.reservationDateTime)
+        const updatedPayload = {
+          ...editingBooking,
+          evOwnerNIC: formData.evOwnerNIC,
+          chargingStationId: formData.chargingStationId,
+          slotId: formData.slotId,
+          startTime: start.toISOString(),
+          endTime: new Date(start.getTime() + (formData.durationMinutes || 0) * 60000).toISOString(),
+          durationMinutes: formData.durationMinutes,
+          status: formData.status
+        }
+        await apiService.updateBooking(editingBooking.id, updatedPayload)
         Swal.fire('Success', 'Booking updated successfully', 'success')
       } else {
-        await apiService.createBooking(formData)
+        // Map formData reservationDateTime -> startTime/endTime for backend model
+        const start = new Date(formData.reservationDateTime)
+        const payload = {
+          evOwnerNIC: formData.evOwnerNIC,
+          chargingStationId: formData.chargingStationId,
+          slotId: formData.slotId,
+          startTime: start.toISOString(),
+          endTime: new Date(start.getTime() + (formData.durationMinutes || 0) * 60000).toISOString(),
+          durationMinutes: formData.durationMinutes,
+          status: formData.status
+        }
+        await apiService.createBooking(payload)
         Swal.fire('Success', 'Booking created successfully', 'success')
       }
       setShowModal(false)
@@ -130,7 +153,7 @@ const Bookings = () => {
         // Check reservation time to enforce 12 hour rule
         const booking = bookings.find(b => b.id === id)
         if (booking) {
-          const reservationDt = new Date(booking.reservationDateTime)
+          const reservationDt = new Date(booking.startTime)
           const twelveHoursBefore = new Date(reservationDt.getTime() - 12 * 60 * 60 * 1000)
           const now = new Date()
           if (now > twelveHoursBefore) {
@@ -279,7 +302,7 @@ const Bookings = () => {
                         <td className="px-4 py-3">
                           <div className="d-flex align-items-center gap-2">
                             <i className="fas fa-clock text-warning"></i>
-                            <span>{new Date(booking.reservationDateTime).toLocaleString()}</span>
+                              <span>{new Date(booking.startTime).toLocaleString()}</span>
                           </div>
                         </td>
                         <td className="px-4 py-3">

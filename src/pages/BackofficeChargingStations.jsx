@@ -122,7 +122,7 @@ const BackofficeChargingStations = () => {
     setGeocoding(true)
     try {
       const url = `/api/geocoding?city=${encodeURIComponent(city)}`
-      const res = await fetch(url)
+      const res = await fetch(url, { method: 'GET' })
       if (res.status === 429) {
         setGeocodeError('Geocoding rate limit reached. Please try again later.')
         return

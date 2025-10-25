@@ -97,8 +97,6 @@ const CreateStationWithOperator = () => {
     setGeocoding(true)
 
     try {
-      // Use OpenStreetMap Nominatim public API for geocoding (suitable for testing).
-      // Note: Nominatim has usage limits and requires identifying info for heavy use.
       const url = `/api/geocoding?city=${encodeURIComponent(city)}`
       const res = await fetch(url, { method: 'GET' })
       if (res.status === 429) {

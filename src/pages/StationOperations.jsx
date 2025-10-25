@@ -5,7 +5,7 @@ import Swal from 'sweetalert2'
 import LoadingSpinner from '../components/LoadingSpinner'
 
 const StationOperations = () => {
-  const { user, isStationOperator } = useAuth()
+  const { user, isStationOperator, isBackoffice } = useAuth()
   const [loading, setLoading] = useState(true)
   const [stations, setStations] = useState([])
   const [bookings, setBookings] = useState([])
@@ -13,10 +13,11 @@ const StationOperations = () => {
   const [qrInput, setQrInput] = useState('')
 
   useEffect(() => {
-    if (isStationOperator) {
+    // Load data for Station Operators or Backoffice users (both should be able to manage operations)
+    if (isStationOperator || isBackoffice) {
       loadStationData()
     }
-  }, [isStationOperator])
+  }, [isStationOperator, isBackoffice])
 
   const loadStationData = async () => {
     try {
@@ -54,7 +55,7 @@ const StationOperations = () => {
             <div class="text-start">
               <p><strong>Booking Reference:</strong> ${response.bookingReference}</p>
               <p><strong>EV Owner NIC:</strong> ${response.evOwnerNIC}</p>
-              <p><strong>Reservation Time:</strong> ${new Date(response.reservationDateTime).toLocaleString()}</p>
+              <p><strong>Reservation Time:</strong> ${response.startTime ? new Date(response.startTime).toLocaleString() : (response.reservationDateTime ? new Date(response.reservationDateTime).toLocaleString() : 'N/A')}</p>
               <p><strong>Duration:</strong> ${response.durationMinutes} minutes</p>
               <p><strong>Status:</strong> <span class="badge bg-success">${response.status}</span></p>
             </div>
@@ -113,12 +114,12 @@ const StationOperations = () => {
     }
   }
 
-  if (!isStationOperator) {
+  if (!(isStationOperator || isBackoffice)) {
     return (
       <div className="container mt-5">
         <div className="alert alert-danger">
           <i className="fas fa-ban me-2"></i>
-          Access denied. This page is only available for Station Operators.
+          Access denied. This page is only available for Station Operators or Backoffice users.
         </div>
       </div>
     )
@@ -127,13 +128,13 @@ const StationOperations = () => {
   if (loading) return <LoadingSpinner />
 
   const todaysBookings = bookings.filter(booking => {
-    const bookingDate = new Date(booking.reservationDateTime)
+    const bookingDate = new Date(booking.startTime || booking.reservationDateTime)
     const today = new Date()
     return bookingDate.toDateString() === today.toDateString()
   })
 
   const upcomingBookings = bookings.filter(booking => {
-    const bookingDate = new Date(booking.reservationDateTime)
+    const bookingDate = new Date(booking.startTime || booking.reservationDateTime)
     const today = new Date()
     return bookingDate > today
   })
@@ -322,7 +323,7 @@ const StationOperations = () => {
                             <td className="fw-bold">{booking.bookingReference}</td>
                             <td>{booking.evOwnerNIC}</td>
                             <td>{station?.name || 'Unknown'}</td>
-                            <td>{new Date(booking.reservationDateTime).toLocaleTimeString()}</td>
+                            <td>{new Date(booking.startTime || booking.reservationDateTime).toLocaleTimeString()}</td>
                             <td>{booking.durationMinutes}min</td>
                             <td>
                               <span className={`badge ${
